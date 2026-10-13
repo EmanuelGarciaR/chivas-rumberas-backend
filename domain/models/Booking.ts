@@ -7,7 +7,7 @@ export interface Booking {
   customerEmail: string;
   customerPhone: string;
   guestCount: number;
-  route: string;
+  travel: string;
   eventDate: Date;
   startTime: string;
   durationHours: number;
@@ -17,4 +17,3 @@ export interface Booking {
   createdAt: Date;
   updatedAt: Date;
 }
-

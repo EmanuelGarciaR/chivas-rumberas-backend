@@ -1,6 +1,6 @@
 export interface CreateTripInput {
   chivaId: string;
-  routeId: string;
+  travelId: string;
   customerName: string;
   customerEmail: string;
   customerPhone: string;

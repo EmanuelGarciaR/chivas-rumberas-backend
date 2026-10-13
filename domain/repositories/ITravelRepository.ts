@@ -8,5 +8,5 @@ export interface ITravelRepository {
 
   findTravelById(id: string): Promise<Travel | null>;
 
-  saveTravel(route: Travel): Promise<Travel>;
+  saveTravel(travel: Travel): Promise<Travel>;
 }

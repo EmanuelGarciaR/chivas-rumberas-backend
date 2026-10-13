@@ -46,9 +46,9 @@ export class InvalidBookingStatusTransitionError extends DomainError {
   }
 }
 
-export class RouteNotFoundError extends DomainError {
-  constructor(routeId: string) {
-    super(`El recorrido con ID "${routeId}" no fue encontrado.`);
-    this.name = "RouteNotFoundError";
+export class TravelNotFoundError extends DomainError {
+  constructor(travelId: string) {
+    super(`El recorrido con ID "${travelId}" no fue encontrado.`);
+    this.name = "TravelNotFoundError";
   }
 }

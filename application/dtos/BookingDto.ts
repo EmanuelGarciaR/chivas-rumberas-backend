@@ -5,7 +5,7 @@ import { BookingStatus } from "../../domain/models/Booking";
  */
 export interface CreateBookingDto {
   chivaId: string;
-  routeId: string;
+  travelId: string;
   customerName: string;
   customerEmail: string;
   customerPhone: string;
@@ -23,8 +23,8 @@ export interface BookingResponseDto {
   id: string;
   chivaId: string;
   chivaName: string;
-  routeId: string;
-  routeName: string;
+  travelId: string;
+  travelName: string;
   customerName: string;
   customerEmail: string;
   customerPhone: string;
