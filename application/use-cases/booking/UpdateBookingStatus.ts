@@ -1,12 +1,9 @@
-import { IBookingRepository } from "../../domain/repositories/IBookingRepository";
-import { INotificationService } from "../ports/INotificationService";
-import { BookingResponseDto } from "../dtos/BookingDto";
-import {
-  BookingNotFoundError,
-  InvalidBookingStatusTransitionError,
-} from "../../domain/errors/DomainErrors";
-import { BookingStatus } from "../../domain/models/Booking";
-import { TimeSlot } from "../../domain/value-objects/TimeSlot";
+import { IBookingRepository } from "../../../domain/repositories/IBookingRepository";
+import { INotificationService } from "../../ports/INotificationService";
+import { BookingResponseDto } from "../../dtos/BookingDto";
+import { BookingNotFoundError, InvalidBookingStatusTransitionError } from "../../../domain/errors/DomainErrors";
+import { BookingStatus } from "../../../domain/models/Booking";
+import { TimeSlot } from "../../../domain/value-objects/TimeSlot";
 
 /**
  * Caso de uso: Cambiar el estado de una reserva (confirmar o cancelar).
@@ -30,7 +27,7 @@ export class UpdateBookingStatusUseCase {
   ) {}
 
   async execute(bookingId: string, newStatus: BookingStatus): Promise<BookingResponseDto> {
-    const booking = await this.bookingRepository.findById(bookingId);
+    const booking = await this.bookingRepository.findBookingById(bookingId);
     if (!booking) throw new BookingNotFoundError(bookingId);
 
     const allowed = this.VALID_TRANSITIONS[booking.status];
@@ -38,7 +35,7 @@ export class UpdateBookingStatusUseCase {
       throw new InvalidBookingStatusTransitionError(booking.status, newStatus);
     }
 
-    const updated = await this.bookingRepository.updateStatus(bookingId, newStatus);
+    const updated = await this.bookingRepository.updateBookingStatus(bookingId, newStatus);
 
     const timeSlot = TimeSlot.create(updated.startTime, updated.durationHours);
     const response: BookingResponseDto = {
