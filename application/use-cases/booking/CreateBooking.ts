@@ -8,7 +8,7 @@ import { TimeSlot } from "../../../domain/value-objects/TimeSlot";
 import { GuestCount } from "../../../domain/value-objects/GuestCount";
 import { ChivaNotFoundError, ChivaNotAvailableError, BookingConflictError, TravelNotFoundError } from "../../../domain/errors/DomainErrors";
 import { Booking } from "../../../domain/models/Booking";
-import { randomUUID } from "crypto";
+import { randomUUID } from "node:crypto";
 
 /**
  * Caso de uso: Crear una reserva de chiva.
@@ -32,7 +32,7 @@ export class CreateBookingUseCase {
 
   async execute(dto: CreateBookingDto): Promise<BookingResponseDto> {
     // Validar chiva
-    const chiva = await this.chivaRepository.findChivaById(dto.chivaId);
+    const chiva = await this.chivaRepository.findById(dto.chivaId);
     if (!chiva) throw new ChivaNotFoundError(dto.chivaId);
     if (chiva.status !== "available") throw new ChivaNotAvailableError(dto.chivaId);
 
