@@ -30,6 +30,4 @@ export interface IBookingRepository {
   saveBooking(booking: Booking): Promise<Booking>;
 
   updateBookingStatus(id: string, status: BookingStatus): Promise<Booking>;
-
-  deleteBooking(id: string): Promise<void>;
 }
