@@ -1,0 +1,93 @@
+// This is your Prisma schema file.
+// Learn more: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider  = "postgresql"
+  url       = env("DATABASE_URL")    // Pooler (PgBouncer) — para runtime
+  directUrl = env("DIRECT_URL")      // Conexión directa — para db:push y migraciones
+}
+
+model Chiva {
+  id           String      @id @default(uuid())
+  name         String
+  description  String
+  capacity     Int
+  imageUrls    String[]
+  pricePerHour Float
+  status       ChivaStatus @default(available)
+  features     String[]
+  createdAt    DateTime    @default(now())
+  updatedAt    DateTime    @updatedAt
+
+  bookings Booking[]
+
+  @@map("chivas")
+}
+
+model Travel {
+  id            String  @id @default(uuid())
+  name          String
+  description   String
+  durationHours Float
+  highlights    String[]
+  isActive      Boolean @default(true)
+
+  bookings Booking[]
+
+  @@map("travels")
+}
+
+model Booking {
+  id            String        @id @default(uuid())
+  chivaId       String
+  travelId      String
+  customerName  String
+  customerEmail String
+  customerPhone String
+  guestCount    Int
+  eventDate     DateTime
+  startTime     String        // "HH:mm"
+  durationHours Float
+  totalPrice    Float
+  status        BookingStatus @default(pending)
+  notes         String?
+  createdAt     DateTime      @default(now())
+  updatedAt     DateTime      @updatedAt
+
+  chiva  Chiva  @relation(fields: [chivaId], references: [id])
+  travel Travel @relation(fields: [travelId], references: [id])
+
+  @@map("bookings")
+}
+
+model User {
+  id           String   @id @default(uuid())
+  email        String   @unique
+  passwordHash String
+  role         UserRole @default(operator)
+  createdAt    DateTime @default(now())
+
+  @@map("users")
+}
+
+enum ChivaStatus {
+  available
+  maintenance
+  retired
+}
+
+enum BookingStatus {
+  pending
+  confirmed
+  cancelled
+  completed
+}
+
+enum UserRole {
+  admin
+  operator
+}
