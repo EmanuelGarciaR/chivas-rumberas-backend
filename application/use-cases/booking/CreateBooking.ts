@@ -8,7 +8,7 @@ import { TimeSlot } from "../../../domain/value-objects/TimeSlot";
 import { GuestCount } from "../../../domain/value-objects/GuestCount";
 import { ChivaNotFoundError, ChivaNotAvailableError, BookingConflictError, TravelNotFoundError } from "../../../domain/errors/DomainErrors";
 import { Booking } from "../../../domain/models/Booking";
-import { randomUUID } from "node:crypto";
+import { generateBookingCode } from "../../../domain/utils/idGenerator";
 
 /**
  * Caso de uso: Crear una reserva de chiva.
@@ -65,13 +65,13 @@ export class CreateBookingUseCase {
 
     // Persistir
     const newBooking: Booking = {
-      id: randomUUID(),
+      id: generateBookingCode(),
       chivaId: dto.chivaId,
       customerName: dto.customerName,
       customerEmail: dto.customerEmail,
       customerPhone: dto.customerPhone,
       guestCount: dto.guestCount,
-      travel: travel.name,
+      travel: travel.id,
       eventDate: eventDate.value,
       startTime: timeSlot.startTime,
       durationHours: timeSlot.durationHours,
