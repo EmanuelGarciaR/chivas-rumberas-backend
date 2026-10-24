@@ -22,7 +22,7 @@ export class GetAvailabilityUseCase {
 
   async execute(dto: GetAvailabilityDto): Promise<AvailabilityResponseDto> {
     // Validar que la chiva existe
-    const chiva = await this.chivaRepository.findById(dto.chivaId);
+    const chiva = await this.chivaRepository.findChivaById(dto.chivaId);
     if (!chiva) throw new ChivaNotFoundError(dto.chivaId);
 
     const date = new Date(dto.date);

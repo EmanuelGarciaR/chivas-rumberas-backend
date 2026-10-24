@@ -10,7 +10,7 @@ export class GetChivaByIdUseCase {
   constructor(private readonly chivaRepository: IChivaRepository) {}
 
   async execute(chivaId: string): Promise<ChivaResponseDto> {
-    const chiva = await this.chivaRepository.findById(chivaId);
+    const chiva = await this.chivaRepository.findChivaById(chivaId);
     if (!chiva) throw new ChivaNotFoundError(chivaId);
 
     return {

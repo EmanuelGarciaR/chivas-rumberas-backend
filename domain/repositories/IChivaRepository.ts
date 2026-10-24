@@ -8,7 +8,7 @@ import { Chiva, ChivaStatus } from "../models/Chiva";
 export interface IChivaRepository {
   findChivaAll(status?: ChivaStatus): Promise<Chiva[]>;
 
-  findById(id: string): Promise<Chiva | null>;
+  findChivaById(id: string): Promise<Chiva | null>;
 
   saveChiva(chiva: Chiva): Promise<Chiva>;
 

@@ -32,7 +32,7 @@ export class CreateBookingUseCase {
 
   async execute(dto: CreateBookingDto): Promise<BookingResponseDto> {
     // Validar chiva
-    const chiva = await this.chivaRepository.findById(dto.chivaId);
+    const chiva = await this.chivaRepository.findChivaById(dto.chivaId);
     if (!chiva) throw new ChivaNotFoundError(dto.chivaId);
     if (chiva.status !== "available") throw new ChivaNotAvailableError(dto.chivaId);
 
