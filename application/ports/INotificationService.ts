@@ -19,5 +19,5 @@ export interface INotificationService {
   /**
   Envía email al cliente cuando su reserva es confirmada por el operador.
    */
-  sendBookingStatusUpdate(booking: BookingResponseDto): Promise<void>;
+  sendBookingStatusUpdate(booking: BookingResponseDto, previousStatus: string): Promise<void>;
 }
