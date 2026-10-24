@@ -17,7 +17,7 @@ export class NotificationService implements INotificationService {
   async sendBookingConfirmation(booking: BookingResponseDto): Promise<void> {
     await Promise.allSettled([
       this.emailService.sendBookingConfirmation(booking),
-      this.whatsAppService.sendBookingConfirmation(booking),
+      // this.whatsAppService.sendBookingConfirmation(booking),
     ]);
   }
 
@@ -29,7 +29,7 @@ export class NotificationService implements INotificationService {
   async sendBookingStatusUpdate( booking: BookingResponseDto, previousStatus: string ): Promise<void> {
     await Promise.allSettled([
       this.emailService.sendBookingStatusUpdate(booking, previousStatus),
-      this.whatsAppService.sendBookingStatusUpdate(booking, previousStatus),
+      // this.whatsAppService.sendBookingStatusUpdate(booking, previousStatus),
     ]);
   }
 }

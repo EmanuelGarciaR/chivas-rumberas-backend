@@ -2,21 +2,21 @@
 // import { IWhatsAppService } from "../../application/ports/IWhatsAppService";
 // import { BookingResponseDto } from "../../application/dtos/BookingDto";
 
-// /**
-//  * Implementación del servicio de WhatsApp usando Twilio.
-//  *
-//  * ─── CONFIGURACIÓN PASO A PASO ────────────────────────────────────────────
-//  * 1. Crea cuenta en https://www.twilio.com/try-twilio
-//  * 2. En el dashboard, ve a Messaging → Try it out → Send a WhatsApp message
-//  * 3. Sigue el sandbox: conecta tu número personal enviando el código al +1 415 523 8886
-//  * 4. En el .env configura:
-//  *    TWILIO_ACCOUNT_SID=ACxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
-//  *    TWILIO_AUTH_TOKEN=xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
-//  *    TWILIO_WHATSAPP_FROM=whatsapp:+14155238886   ← número del sandbox Twilio
-//  *
-//  * Para producción: solicita aprobación de WhatsApp Business en Twilio Console.
-//  * ──────────────────────────────────────────────────────────────────────────
-//  */
+// // /**
+// //  * Implementación del servicio de WhatsApp usando Twilio.
+// //  *
+// //  * ─── CONFIGURACIÓN PASO A PASO ────────────────────────────────────────────
+// //  * 1. Crea cuenta en https://www.twilio.com/try-twilio
+// //  * 2. En el dashboard, ve a Messaging → Try it out → Send a WhatsApp message
+// //  * 3. Sigue el sandbox: conecta tu número personal enviando el código al +1 415 523 8886
+// //  * 4. En el .env configura:
+// //  *    TWILIO_ACCOUNT_SID=ACxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
+// //  *    TWILIO_AUTH_TOKEN=xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
+// //  *    TWILIO_WHATSAPP_FROM=whatsapp:+14155238886   ← número del sandbox Twilio
+// //  *
+// //  * Para producción: solicita aprobación de WhatsApp Business en Twilio Console.
+// //  * ──────────────────────────────────────────────────────────────────────────
+// //  */
 // export class WhatsAppTwilioService implements IWhatsAppService {
 //   private readonly client: ReturnType<typeof twilio>;
 //   private readonly fromNumber: string;
@@ -52,7 +52,7 @@
 //     }
 
 //     const message =
-//       `🎉 *¡Reserva recibida!* Chivas Rumberas\n\n` +
+//     //   `🎉 *¡Reserva recibida!* Chivas Rumberas\n\n` +
 //       `Hola ${booking.customerName} 👋\n` +
 //       `Tu reserva #${booking.id.slice(0, 8).toUpperCase()} fue registrada exitosamente.\n\n` +
 //       `🚌 *Chiva:* ${booking.chivaName}\n` +
