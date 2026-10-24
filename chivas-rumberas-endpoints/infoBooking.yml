@@ -1,0 +1,16 @@
+info:
+  name: infoBooking
+  type: http
+
+http:
+  method: GET
+  url: http://localhost:3000/bookings/CR-RHABYS
+  auth:
+    type: bearer
+    token: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJmNzFjYjhkNy04ZDg1LTQzNTgtYmFmMy0xNGE1MGNjMDM5NDgiLCJlbWFpbCI6ImFkbWluQGNoaXZhc3J1bWJlcmFzLmNvbSIsInJvbGUiOiJhZG1pbiIsImlhdCI6MTc5MjgyNzY3NywiZXhwIjoxNzkyODU2NDc3fQ.aVLNHe4MNTDnC1C5-6CnmnkM9_4ezUEXKlyZpNUoAw0
+
+settings:
+  encodeUrl: true
+  timeout: 0
+  followRedirects: true
+  maxRedirects: 5

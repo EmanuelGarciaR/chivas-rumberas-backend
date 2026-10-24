@@ -1,0 +1,29 @@
+info:
+  name: createBooking
+  type: http
+
+http:
+  method: POST
+  url: http://localhost:3000/bookings
+  body:
+    type: json
+    data: |-
+      {
+        "chivaId": "la-coqueta-1954",
+        "travelId": "trv_alumbrados",
+        "customerName": "pruebaaaaaa",
+        "customerEmail": "pruebaaaaa@ejemplo.com",
+        "customerPhone": "3001234567",
+        "guestCount": 50,
+        "eventDate": "2026-11-15",
+        "startTime": "18:00",
+        "durationHours": 4,
+        "notes": "Cumpleaños de 2 años"
+      }
+  auth: inherit
+
+settings:
+  encodeUrl: true
+  timeout: 0
+  followRedirects: true
+  maxRedirects: 5

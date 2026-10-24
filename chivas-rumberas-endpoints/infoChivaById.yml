@@ -1,0 +1,22 @@
+info:
+  name: infoChivaById
+  type: http
+  seq: 1
+
+http:
+  method: GET
+  url: http://localhost:3000/chivas/la-perla-1959
+  body:
+    type: json
+    data: |-
+      {
+        "email": "admin@chivasrumberas.com",
+        "password": "Admin123*Chiva"
+      }
+  auth: inherit
+
+settings:
+  encodeUrl: true
+  timeout: 0
+  followRedirects: true
+  maxRedirects: 5
