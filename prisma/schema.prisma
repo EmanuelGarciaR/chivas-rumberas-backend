@@ -12,7 +12,7 @@ datasource db {
 }
 
 model Chiva {
-  id           String      @id @default(uuid())
+  id           String      @id
   name         String
   description  String
   capacity     Int
@@ -29,7 +29,7 @@ model Chiva {
 }
 
 model Travel {
-  id            String  @id @default(uuid())
+  id            String  @id
   name          String
   description   String
   durationHours Float
@@ -42,7 +42,7 @@ model Travel {
 }
 
 model Booking {
-  id            String        @id @default(uuid())
+  id            String        @id
   chivaId       String
   travelId      String
   customerName  String
