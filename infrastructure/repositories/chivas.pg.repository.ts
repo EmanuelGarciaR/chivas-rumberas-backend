@@ -14,7 +14,7 @@ export class ChivaRepository implements IChivaRepository {
     return rows.map(this.toDomain);
   }
 
-  async findById(id: string): Promise<Chiva | null> {
+  async findChivaById(id: string): Promise<Chiva | null> {
     const row = await prisma.chiva.findUnique({ where: { id } });
     return row ? this.toDomain(row) : null;
   }

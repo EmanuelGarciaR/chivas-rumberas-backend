@@ -11,7 +11,7 @@ import { BookingResponseDto } from "../../application/dtos/BookingDto";
 export class NotificationService implements INotificationService {
   constructor(
     private readonly emailService: IEmailService,
-    private readonly whatsAppService: IWhatsAppService
+    private readonly whatsAppService?: IWhatsAppService
   ) {}
 
   async sendBookingConfirmation(booking: BookingResponseDto): Promise<void> {
