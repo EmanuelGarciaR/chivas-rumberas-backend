@@ -18,7 +18,8 @@
     "domain/**/*",
     "application/**/*",
     "infrastructure/**/*",
-    "interface/**/*"
+    "interface/**/*",
+    "api/**/*"
   ],
   "exclude": ["node_modules", "dist", "prisma"]
 }
