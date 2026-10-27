@@ -6,6 +6,7 @@
   "scripts": {
     "dev": "tsx watch interface/server.ts",
     "build": "tsc",
+    "test": "tsx --test tests/**/*.test.ts",
     "start": "node dist/interface/server.js",
     "db:generate": "node_modules\\.bin\\prisma.cmd generate --schema=prisma/schema.prisma",
     "db:migrate": "node_modules\\.bin\\prisma.cmd migrate dev --schema=prisma/schema.prisma",

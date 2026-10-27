@@ -6,6 +6,13 @@ import { UpdateBookingStatusUseCase } from "../../application/use-cases/booking/
 import { GetBookingsUseCase } from "../../application/use-cases/booking/GetBookings";
 import { CreateBookingDto } from "../../application/dtos/BookingDto";
 import { BookingStatus } from "../../domain/models/Booking";
+import { ValidationError } from "../../domain/errors/DomainErrors";
+
+const ACCEPTED_BOOKING_STATUSES: BookingStatus[] = [
+  "confirmed",
+  "cancelled",
+  "completed",
+];
 
 export class BookingsController {
   constructor(
@@ -76,17 +83,26 @@ export class BookingsController {
   updateStatus = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
     try {
       const id = req.params.id as string;
-      const { status } = req.body as { status: BookingStatus };
+      const { status } = req.body ?? {};
 
       if (!status) {
-        res.status(400).json({
-          error: { type: "ValidationError", message: "El campo status es requerido." },
-        });
-        return;
+        throw new ValidationError("El campo status es requerido.");
+      }
+
+      if (
+        typeof status !== "string" ||
+        !ACCEPTED_BOOKING_STATUSES.includes(status as BookingStatus)
+      ) {
+        throw new ValidationError(
+          "El campo status debe ser confirmed, cancelled o completed."
+        );
       }
 
       // Si no existe o la transición no es válida, el use case lanza los errores de dominio
-      const booking = await this.updateBookingStatusUseCase.execute(id, status);
+      const booking = await this.updateBookingStatusUseCase.execute(
+        id,
+        status as BookingStatus
+      );
       res.status(200).json(booking);
     } catch (err) {
       next(err);

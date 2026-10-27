@@ -19,6 +19,7 @@ import { LoginUseCase } from "../application/use-cases/auth/Login";
 import { GetChivasUseCase } from "../application/use-cases/chiva/GetChivas";
 import { GetChivaByIdUseCase } from "../application/use-cases/chiva/GetChivaById";
 import { UpdateChivaUseCase } from "../application/use-cases/chiva/UpdateChiva";
+import { UpdateChivaStatusUseCase } from "../application/use-cases/chiva/UpdateChivaStatus";
 import { GetTravelsUseCase } from "../application/use-cases/travel/GetTravels";
 import { CreateBookingUseCase } from "../application/use-cases/booking/CreateBooking";
 import { GetAvailabilityUseCase } from "../application/use-cases/booking/GetAvailability";
@@ -47,6 +48,7 @@ const loginUseCase = new LoginUseCase(userRepository, jwtService);
 const getChivasUseCase = new GetChivasUseCase(chivaRepository);
 const getChivaByIdUseCase = new GetChivaByIdUseCase(chivaRepository);
 const updateChivaUseCase = new UpdateChivaUseCase(chivaRepository);
+const updateChivaStatusUseCase = new UpdateChivaStatusUseCase(chivaRepository);
 const getTravelsUseCase = new GetTravelsUseCase(travelRepository);
 const createBookingUseCase = new CreateBookingUseCase(
   bookingRepository,
@@ -71,7 +73,8 @@ export const authController = new AuthController(loginUseCase);
 export const chivasController = new ChivasController(
   getChivasUseCase,
   getChivaByIdUseCase,
-  updateChivaUseCase
+  updateChivaUseCase,
+  updateChivaStatusUseCase
 );
 export const travelsController = new TravelsController(getTravelsUseCase);
 export const bookingsController = new BookingsController(

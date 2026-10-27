@@ -13,6 +13,9 @@ export const createChivasRouter = (controller: ChivasController, jwtService: IJw
   /** GET /chivas/:id — Público */
   router.get("/:id", controller.getById);
 
+  /** PATCH /chivas/:id/status — Solo administradores */
+  router.patch("/:id/status", auth, requireRole("admin"), controller.updateStatus);
+
   /** PATCH /chivas/:id — Solo administradores */
   router.patch("/:id", auth, requireRole("admin"), controller.update);
 

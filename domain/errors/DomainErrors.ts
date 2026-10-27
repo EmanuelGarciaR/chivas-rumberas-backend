@@ -18,8 +18,8 @@ export class ValidationError extends DomainError {
 }
 
 export class ChivaNotFoundError extends DomainError {
-  constructor(chivaId: string) {
-    super(`La chiva con ID "${chivaId}" no fue encontrada.`);
+  constructor(_chivaId: string) {
+    super("Chiva no encontrada.");
     this.name = "ChivaNotFoundError";
   }
 }
