@@ -18,10 +18,12 @@ import { NotificationService } from "../infrastructure/services/NotificationServ
 import { LoginUseCase } from "../application/use-cases/auth/Login";
 import { GetChivasUseCase } from "../application/use-cases/chiva/GetChivas";
 import { GetChivaByIdUseCase } from "../application/use-cases/chiva/GetChivaById";
+import { UpdateChivaUseCase } from "../application/use-cases/chiva/UpdateChiva";
 import { GetTravelsUseCase } from "../application/use-cases/travel/GetTravels";
 import { CreateBookingUseCase } from "../application/use-cases/booking/CreateBooking";
 import { GetAvailabilityUseCase } from "../application/use-cases/booking/GetAvailability";
 import { GetBookingByIdUseCase } from "../application/use-cases/booking/GetBookingById";
+import { GetBookingsUseCase } from "../application/use-cases/booking/GetBookings";
 import { UpdateBookingStatusUseCase } from "../application/use-cases/booking/UpdateBookingStatus";
 
 // ── Interface — Controllers ────────────────────────────────────────────────
@@ -44,6 +46,7 @@ const notificationService = new NotificationService(emailService);
 const loginUseCase = new LoginUseCase(userRepository, jwtService);
 const getChivasUseCase = new GetChivasUseCase(chivaRepository);
 const getChivaByIdUseCase = new GetChivaByIdUseCase(chivaRepository);
+const updateChivaUseCase = new UpdateChivaUseCase(chivaRepository);
 const getTravelsUseCase = new GetTravelsUseCase(travelRepository);
 const createBookingUseCase = new CreateBookingUseCase(
   bookingRepository,
@@ -53,6 +56,11 @@ const createBookingUseCase = new CreateBookingUseCase(
 );
 const getAvailabilityUseCase = new GetAvailabilityUseCase(bookingRepository, chivaRepository);
 const getBookingByIdUseCase = new GetBookingByIdUseCase(bookingRepository);
+const getBookingsUseCase = new GetBookingsUseCase(
+  bookingRepository,
+  chivaRepository,
+  travelRepository
+);
 const updateBookingStatusUseCase = new UpdateBookingStatusUseCase(
   bookingRepository,
   notificationService
@@ -60,13 +68,18 @@ const updateBookingStatusUseCase = new UpdateBookingStatusUseCase(
 
 // ── Controladores ──────────────────────────────────────────────────────────
 export const authController = new AuthController(loginUseCase);
-export const chivasController = new ChivasController(getChivasUseCase, getChivaByIdUseCase);
+export const chivasController = new ChivasController(
+  getChivasUseCase,
+  getChivaByIdUseCase,
+  updateChivaUseCase
+);
 export const travelsController = new TravelsController(getTravelsUseCase);
 export const bookingsController = new BookingsController(
   createBookingUseCase,
   getAvailabilityUseCase,
   getBookingByIdUseCase,
-  updateBookingStatusUseCase
+  updateBookingStatusUseCase,
+  getBookingsUseCase
 );
 
 // Exportamos el jwtService para usarlo en los routers que necesitan auth

@@ -58,7 +58,7 @@ export class UpdateBookingStatusUseCase {
       createdAt: updated.createdAt.toISOString(),
     };
 
-    await this.notificationService.sendBookingStatusUpdate(response);
+    await this.notificationService.sendBookingStatusUpdate(response, booking.status);
     return response;
   }
 }

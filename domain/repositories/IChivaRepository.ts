@@ -13,4 +13,9 @@ export interface IChivaRepository {
   saveChiva(chiva: Chiva): Promise<Chiva>;
 
   updateChivaStatus(id: string, status: ChivaStatus): Promise<Chiva>;
+
+  updateChiva(
+    id: string,
+    updates: { pricePerHour?: number; status?: ChivaStatus }
+  ): Promise<Chiva>;
 }

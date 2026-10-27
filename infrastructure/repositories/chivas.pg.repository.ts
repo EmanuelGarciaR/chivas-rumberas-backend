@@ -43,6 +43,20 @@ export class ChivaRepository implements IChivaRepository {
     return this.toDomain(row);
   }
 
+  async updateChiva(
+    id: string,
+    updates: { pricePerHour?: number; status?: ChivaStatus }
+  ): Promise<Chiva> {
+    const row = await prisma.chiva.update({
+      where: { id },
+      data: {
+        ...(updates.pricePerHour !== undefined && { pricePerHour: updates.pricePerHour }),
+        ...(updates.status !== undefined && { status: updates.status }),
+      },
+    });
+    return this.toDomain(row);
+  }
+
   /** Mapea la fila de Prisma al modelo de dominio */
   private toDomain(row: any): Chiva {
     return {

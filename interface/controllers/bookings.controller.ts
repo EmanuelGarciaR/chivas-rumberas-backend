@@ -3,6 +3,7 @@ import { CreateBookingUseCase } from "../../application/use-cases/booking/Create
 import { GetAvailabilityUseCase } from "../../application/use-cases/booking/GetAvailability";
 import { GetBookingByIdUseCase } from "../../application/use-cases/booking/GetBookingById";
 import { UpdateBookingStatusUseCase } from "../../application/use-cases/booking/UpdateBookingStatus";
+import { GetBookingsUseCase } from "../../application/use-cases/booking/GetBookings";
 import { CreateBookingDto } from "../../application/dtos/BookingDto";
 import { BookingStatus } from "../../domain/models/Booking";
 
@@ -11,8 +12,18 @@ export class BookingsController {
     private readonly createBookingUseCase: CreateBookingUseCase,
     private readonly getAvailabilityUseCase: GetAvailabilityUseCase,
     private readonly getBookingByIdUseCase: GetBookingByIdUseCase,
-    private readonly updateBookingStatusUseCase: UpdateBookingStatusUseCase
+    private readonly updateBookingStatusUseCase: UpdateBookingStatusUseCase,
+    private readonly getBookingsUseCase: GetBookingsUseCase
   ) {}
+
+  getAll = async (_req: Request, res: Response, next: NextFunction): Promise<void> => {
+    try {
+      const bookings = await this.getBookingsUseCase.execute();
+      res.status(200).json(bookings);
+    } catch (err) {
+      next(err);
+    }
+  };
 
   /** POST /bookings — Público: el cliente reserva una chiva */
   create = async (req: Request, res: Response, next: NextFunction): Promise<void> => {

@@ -13,3 +13,8 @@ export interface ChivaResponseDto {
   status: ChivaStatus;
   features: string[];
 }
+
+export interface UpdateChivaDto {
+  pricePerHour?: number;
+  status?: ChivaStatus;
+}

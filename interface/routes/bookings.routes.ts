@@ -18,6 +18,9 @@ export const createBookingsRouter = (
   router.post("/", controller.create);
 
   // ── Rutas PROTEGIDAS (requieren JWT de admin/operador) ────────────────────
+  /** GET /bookings — Listado para el panel admin */
+  router.get("/", auth, controller.getAll);
+
   /** GET /bookings/:id */
   router.get("/:id", auth, controller.getById);
 

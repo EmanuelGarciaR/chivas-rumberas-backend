@@ -21,6 +21,9 @@ const domainErrorToStatus = (error: Error): number => {
     // 422 — Unprocessable Entity
     InvalidBookingStatusTransitionError: 422,
 
+    // 400 — Bad Request
+    ValidationError: 400,
+
     // 401 — Unauthorized
     InvalidCredentialsError: 401,
     InvalidTokenError: 401,

@@ -26,7 +26,7 @@ app.get("/health", (_req, res) => {
 
 // ── Rutas ─────────────────────────────────────────────────────────────────
 app.use("/auth", createAuthRouter(authController));
-app.use("/chivas", createChivasRouter(chivasController));
+app.use("/chivas", createChivasRouter(chivasController, jwtService));
 app.use("/travels", createTravelsRouter(travelsController));
 app.use("/bookings", createBookingsRouter(bookingsController, jwtService));
 
