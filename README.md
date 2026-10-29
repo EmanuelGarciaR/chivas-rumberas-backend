@@ -22,6 +22,7 @@ Construida con **Node.js**, **Express**, **TypeScript** y **Prisma ORM**, aplica
 - [Stack Tecnológico](#-stack-tecnológico)
 - [Arquitectura del Proyecto](#-arquitectura-del-proyecto)
 - [Estructura del Código](#-estructura-del-código)
+- [Uso de Inteligencia Artificial](#-uso-de-inteligencia-artificial)
 - [Scripts del Proyecto](#-scripts-del-proyecto)
 - [Reglas de Negocio](#-reglas-de-negocio)
 - [Documentación de la API](#-documentación-de-la-api)
@@ -32,6 +33,12 @@ Construida con **Node.js**, **Express**, **TypeScript** y **Prisma ORM**, aplica
   - [Recorridos (Travels)](#4-recorridos-travels)
   - [Reservas (Bookings)](#5-reservas-bookings)
 - [Colección de Pruebas (Bruno)](#-colección-de-pruebas-bruno)
+
+---
+
+## Uso de Inteligencia Artificial
+
+Durante el desarrollo de este proyecto me apoyé en herramientas de inteligencia artificial principalmente para implementar y revisar la lógica de los middlewares. Sin embargo, en gran medida intenté realizar el desarrollo por mi cuenta, tomando las decisiones de arquitectura, lógica de negocio e integración de manera independiente.
 
 ---
 
