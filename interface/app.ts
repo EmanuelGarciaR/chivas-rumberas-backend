@@ -18,7 +18,7 @@ const app = express();
 // ── Middlewares globales ───────────────────────────────────────────────────
 const configuredOrigins = process.env.CORS_ORIGIN
   ?.split(",")
-  .map((origin) => origin.trim())
+  .map((origin) => origin.trim().replace(/\/+$/, ""))
   .filter(Boolean);
 
 app.use(
