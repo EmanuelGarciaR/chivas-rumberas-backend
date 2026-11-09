@@ -33,6 +33,7 @@ import { GetBookingsUseCase } from "../application/use-cases/booking/GetBookings
 import { UpdateBookingStatusUseCase } from "../application/use-cases/booking/UpdateBookingStatus";
 import { TrackBookingUseCase } from "../application/use-cases/booking/TrackBooking";
 import { SyncBookingCalendarUseCase } from "../application/use-cases/booking/SyncBookingCalendar";
+import { GetBookingsCalendarUseCase } from "../application/use-cases/booking/GetBookingsCalendar";
 
 // ── Interface — Controllers ────────────────────────────────────────────────
 import { AuthController } from "../interface/controllers/auth.controller";
@@ -95,6 +96,7 @@ const syncBookingCalendarUseCase = new SyncBookingCalendarUseCase(
   chivaRepository,
   travelRepository
 );
+const getBookingsCalendarUseCase = new GetBookingsCalendarUseCase(bookingRepository);
 
 // ── Controladores ──────────────────────────────────────────────────────────
 export const authController = new AuthController(loginUseCase);
@@ -114,7 +116,8 @@ export const bookingsController = new BookingsController(
   updateBookingStatusUseCase,
   getBookingsUseCase,
   trackBookingUseCase,
-  syncBookingCalendarUseCase
+  syncBookingCalendarUseCase,
+  getBookingsCalendarUseCase
 );
 export const uploadsController = new UploadsController(imageStorage);
 

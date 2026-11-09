@@ -28,6 +28,8 @@ export interface IBookingRepository {
 
   findBookingPaginated(query: PaginatedBookingsQuery): Promise<PaginatedBookingsResult>;
 
+  findConfirmedByDateRange(startDate: Date, endDate: Date): Promise<Booking[]>;
+
   findOccupiedSlotsByChivaAndDate(
     chivaId: string,
     date: Date

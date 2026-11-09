@@ -79,6 +79,25 @@ export class BookingRepository implements IBookingRepository {
     };
   }
 
+  async findConfirmedByDateRange(startDate: Date, endDate: Date): Promise<Booking[]> {
+    const rows = await prisma.booking.findMany({
+      where: {
+        status: "confirmed",
+        eventDate: {
+          gte: startDate,
+          lt: endDate,
+        },
+      },
+      include: {
+        chiva: { select: { name: true } },
+        travel: { select: { name: true } },
+      },
+      orderBy: [{ eventDate: "asc" }, { startTime: "asc" }, { id: "asc" }],
+    });
+
+    return rows.map((r) => this.toDomain(r));
+  }
+
   async findOccupiedSlotsByChivaAndDate(
     chivaId: string,
     date: Date
@@ -105,8 +124,19 @@ export class BookingRepository implements IBookingRepository {
     durationHours: number,
     excludeBookingId?: string
   ): Promise<boolean> {
-    // Traer todos los slots activos de esa chiva ese día
-    const occupied = await this.findOccupiedSlotsByChivaAndDate(chivaId, eventDate);
+    const dateStr = eventDate.toISOString().split("T")[0];
+    const occupied = await prisma.booking.findMany({
+      where: {
+        chivaId,
+        status: { in: ["pending", "confirmed"] },
+        ...(excludeBookingId && { id: { not: excludeBookingId } }),
+        eventDate: {
+          gte: new Date(dateStr + "T00:00:00.000Z"),
+          lt: new Date(dateStr + "T23:59:59.999Z"),
+        },
+      },
+      select: { startTime: true, durationHours: true },
+    });
 
     const toMinutes = (t: string) => {
       const [h, m] = t.split(":").map(Number);

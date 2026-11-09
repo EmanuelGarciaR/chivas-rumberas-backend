@@ -22,6 +22,9 @@ export const createBookingsRouter = (
   router.post("/", controller.create);
 
   // ── Rutas PROTEGIDAS (requieren JWT de admin/operador) ────────────────────
+  /** GET /bookings/calendar?month=YYYY-MM — Calendario mensual admin */
+  router.get("/calendar", auth, requireRole("admin"), controller.getCalendar);
+
   /** GET /bookings — Listado paginado para el panel admin */
   router.get("/", auth, requireRole("admin"), controller.getAll);
 

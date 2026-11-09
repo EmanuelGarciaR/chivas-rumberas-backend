@@ -7,6 +7,7 @@ import { UpdateBookingStatusUseCase } from "../../application/use-cases/booking/
 import { GetBookingsUseCase } from "../../application/use-cases/booking/GetBookings";
 import { TrackBookingUseCase } from "../../application/use-cases/booking/TrackBooking";
 import { SyncBookingCalendarUseCase } from "../../application/use-cases/booking/SyncBookingCalendar";
+import { GetBookingsCalendarUseCase } from "../../application/use-cases/booking/GetBookingsCalendar";
 import { CreateBookingDto } from "../../application/dtos/BookingDto";
 import { BookingStatus } from "../../domain/models/Booking";
 import { ValidationError } from "../../domain/errors/DomainErrors";
@@ -26,6 +27,13 @@ const trackBookingQuerySchema = z.object({
     .string({ message: "El parámetro email es requerido." })
     .trim()
     .email("El parámetro email debe ser un correo válido."),
+});
+
+const calendarQuerySchema = z.object({
+  month: z
+    .string({ message: "El parámetro month es requerido en formato YYYY-MM." })
+    .trim()
+    .regex(/^\d{4}-(0[1-9]|1[0-2])$/, "El parámetro month debe tener el formato YYYY-MM."),
 });
 
 const getBookingsQuerySchema = z.object({
@@ -69,7 +77,8 @@ export class BookingsController {
     private readonly updateBookingStatusUseCase: UpdateBookingStatusUseCase,
     private readonly getBookingsUseCase: GetBookingsUseCase,
     private readonly trackBookingUseCase?: TrackBookingUseCase,
-    private readonly syncBookingCalendarUseCase?: SyncBookingCalendarUseCase
+    private readonly syncBookingCalendarUseCase?: SyncBookingCalendarUseCase,
+    private readonly getBookingsCalendarUseCase?: GetBookingsCalendarUseCase
   ) {}
 
   getAll = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
@@ -193,6 +202,27 @@ export class BookingsController {
 
       const booking = await this.syncBookingCalendarUseCase.execute(id);
       res.status(200).json(booking);
+    } catch (err) {
+      next(err);
+    }
+  };
+
+  /** GET /bookings/calendar?month=YYYY-MM — Protegido (admin): calendario mensual de reservas confirmadas */
+  getCalendar = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
+    try {
+      const parsed = calendarQuerySchema.safeParse(req.query);
+      if (!parsed.success) {
+        const message =
+          parsed.error.issues[0]?.message ?? "El parámetro month debe tener el formato YYYY-MM.";
+        throw new ValidationError(message);
+      }
+
+      if (!this.getBookingsCalendarUseCase) {
+        throw new Error("GetBookingsCalendarUseCase no configurado.");
+      }
+
+      const calendar = await this.getBookingsCalendarUseCase.execute(parsed.data.month);
+      res.status(200).json(calendar);
     } catch (err) {
       next(err);
     }

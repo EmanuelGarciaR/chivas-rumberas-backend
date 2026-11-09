@@ -73,3 +73,32 @@ export interface TrackBookingResponseDto {
   guestCount: number;
   totalPrice: number;
 }
+
+export interface CalendarSlotDto {
+  bookingId: string;
+  startTime: string;
+  endTime: string;
+  durationHours: number;
+  customerName: string;
+  travelName: string;
+  guestCount: number;
+  endsNextDay?: boolean;
+}
+
+export interface CalendarDayChivaDto {
+  chivaId: string;
+  chivaName: string;
+  slots: CalendarSlotDto[];
+}
+
+export interface CalendarDayDto {
+  date: string;
+  chivasCount: number;
+  chivas: CalendarDayChivaDto[];
+}
+
+export interface BookingsCalendarResponseDto {
+  month: string;
+  chivas: Array<{ id: string; name: string }>;
+  days: CalendarDayDto[];
+}

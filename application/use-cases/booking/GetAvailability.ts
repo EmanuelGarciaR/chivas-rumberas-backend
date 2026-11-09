@@ -66,8 +66,10 @@ export class GetAvailabilityUseCase {
 
     const totalOperationalMinutes = OPERATIONAL_END_MINUTES - OPERATIONAL_START_MINUTES;
     const bookedMinutes = slots.reduce((acc, slot) => {
-      const start = Math.max(toMinutes(slot.startTime), OPERATIONAL_START_MINUTES);
-      const end = Math.min(toMinutes(slot.endTime), OPERATIONAL_END_MINUTES);
+      const slotStartMinutes = toMinutes(slot.startTime);
+      const slotEndMinutes = slotStartMinutes + slot.durationHours * 60;
+      const start = Math.max(slotStartMinutes, OPERATIONAL_START_MINUTES);
+      const end = Math.min(slotEndMinutes, OPERATIONAL_END_MINUTES);
       return acc + Math.max(0, end - start);
     }, 0);
 
