@@ -1,6 +1,6 @@
 import { Router } from "express";
 import { BookingsController } from "../controllers/bookings.controller";
-import { createAuthMiddleware } from "../middlewares/auth.middleware";
+import { createAuthMiddleware, requireRole } from "../middlewares/auth.middleware";
 import { IJwtService } from "../../application/ports/IJwtService";
 
 export const createBookingsRouter = (
@@ -18,8 +18,8 @@ export const createBookingsRouter = (
   router.post("/", controller.create);
 
   // ── Rutas PROTEGIDAS (requieren JWT de admin/operador) ────────────────────
-  /** GET /bookings — Listado para el panel admin */
-  router.get("/", auth, controller.getAll);
+  /** GET /bookings — Listado paginado para el panel admin */
+  router.get("/", auth, requireRole("admin"), controller.getAll);
 
   /** GET /bookings/:id */
   router.get("/:id", auth, controller.getById);

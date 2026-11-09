@@ -1,5 +1,11 @@
-import { IBookingRepository, BookingFilters } from "../../domain/repositories/IBookingRepository";
+import {
+  IBookingRepository,
+  BookingFilters,
+  PaginatedBookingsQuery,
+  PaginatedBookingsResult,
+} from "../../domain/repositories/IBookingRepository";
 import { Booking, BookingStatus } from "../../domain/models/Booking";
+import { Prisma } from "@prisma/client";
 import prisma from "../database/prismaClient";
 
 /**
@@ -7,7 +13,13 @@ import prisma from "../database/prismaClient";
  */
 export class BookingRepository implements IBookingRepository {
   async findBookingById(id: string): Promise<Booking | null> {
-    const row = await prisma.booking.findUnique({ where: { id } });
+    const row = await prisma.booking.findUnique({
+      where: { id },
+      include: {
+        chiva: { select: { name: true } },
+        travel: { select: { name: true } },
+      },
+    });
     return row ? this.toDomain(row) : null;
   }
 
@@ -23,9 +35,48 @@ export class BookingRepository implements IBookingRepository {
           },
         }),
       },
+      include: {
+        chiva: { select: { name: true } },
+        travel: { select: { name: true } },
+      },
       orderBy: { eventDate: "asc" },
     });
-    return rows.map(this.toDomain);
+    return rows.map((r) => this.toDomain(r));
+  }
+
+  async findBookingPaginated(query: PaginatedBookingsQuery): Promise<PaginatedBookingsResult> {
+    const search = query.q?.trim();
+    const where: Prisma.BookingWhereInput = {
+      ...(query.status && { status: query.status }),
+      ...(search && {
+        OR: [
+          { id: { contains: search, mode: "insensitive" } },
+          { customerName: { contains: search, mode: "insensitive" } },
+          { customerEmail: { contains: search, mode: "insensitive" } },
+        ],
+      }),
+    };
+
+    const skip = (query.page - 1) * query.limit;
+
+    const [rows, total] = await Promise.all([
+      prisma.booking.findMany({
+        where,
+        orderBy: [{ createdAt: "desc" }, { id: "desc" }],
+        skip,
+        take: query.limit,
+        include: {
+          chiva: { select: { name: true } },
+          travel: { select: { name: true } },
+        },
+      }),
+      prisma.booking.count({ where }),
+    ]);
+
+    return {
+      data: rows.map((r) => this.toDomain(r)),
+      total,
+    };
   }
 
   async findOccupiedSlotsByChivaAndDate(
@@ -97,6 +148,10 @@ export class BookingRepository implements IBookingRepository {
     const row = await prisma.booking.update({
       where: { id },
       data: { status },
+      include: {
+        chiva: { select: { name: true } },
+        travel: { select: { name: true } },
+      },
     });
     return this.toDomain(row);
   }
@@ -105,11 +160,13 @@ export class BookingRepository implements IBookingRepository {
     return {
       id: row.id,
       chivaId: row.chivaId,
+      chivaName: row.chiva?.name,
       customerName: row.customerName,
       customerEmail: row.customerEmail,
       customerPhone: row.customerPhone,
       guestCount: row.guestCount,
       travel: row.travelId,
+      travelName: row.travel?.name,
       eventDate: row.eventDate,
       startTime: row.startTime,
       durationHours: row.durationHours,

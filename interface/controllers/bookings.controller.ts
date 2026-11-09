@@ -1,4 +1,5 @@
 import { Request, Response, NextFunction } from "express";
+import { z } from "zod";
 import { CreateBookingUseCase } from "../../application/use-cases/booking/CreateBooking";
 import { GetAvailabilityUseCase } from "../../application/use-cases/booking/GetAvailability";
 import { GetBookingByIdUseCase } from "../../application/use-cases/booking/GetBookingById";
@@ -14,6 +15,39 @@ const ACCEPTED_BOOKING_STATUSES: BookingStatus[] = [
   "completed",
 ];
 
+const getBookingsQuerySchema = z.object({
+  page: z
+    .string()
+    .optional()
+    .transform((val) => (val === undefined || val === "" ? 1 : Number(val)))
+    .refine((val) => Number.isInteger(val) && val >= 1, {
+      message: "El parámetro page debe ser un entero mayor o igual a 1.",
+    }),
+  limit: z
+    .string()
+    .optional()
+    .transform((val) => (val === undefined || val === "" ? 10 : Number(val)))
+    .refine((val) => Number.isInteger(val) && val >= 1 && val <= 50, {
+      message: "El parámetro limit debe ser un entero entre 1 y 50.",
+    }),
+  status: z
+    .string()
+    .optional()
+    .transform((val) => (val === "" ? undefined : val))
+    .refine(
+      (val): val is BookingStatus | undefined =>
+        val === undefined ||
+        ["pending", "confirmed", "cancelled", "completed"].includes(val),
+      {
+        message: "El parámetro status debe ser pending, confirmed, cancelled o completed.",
+      }
+    ),
+  q: z
+    .string()
+    .optional()
+    .transform((val) => (val && val.trim() ? val.trim() : undefined)),
+});
+
 export class BookingsController {
   constructor(
     private readonly createBookingUseCase: CreateBookingUseCase,
@@ -23,9 +57,14 @@ export class BookingsController {
     private readonly getBookingsUseCase: GetBookingsUseCase
   ) {}
 
-  getAll = async (_req: Request, res: Response, next: NextFunction): Promise<void> => {
+  getAll = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
     try {
-      const bookings = await this.getBookingsUseCase.execute();
+      const parsed = getBookingsQuerySchema.safeParse(req.query);
+      if (!parsed.success) {
+        const message = parsed.error.issues[0]?.message ?? "Parámetros de consulta inválidos.";
+        throw new ValidationError(message);
+      }
+      const bookings = await this.getBookingsUseCase.execute(parsed.data);
       res.status(200).json(bookings);
     } catch (err) {
       next(err);

@@ -6,6 +6,18 @@ export interface BookingFilters {
   status?: BookingStatus;
 }
 
+export interface PaginatedBookingsQuery {
+  page: number;
+  limit: number;
+  status?: BookingStatus;
+  q?: string;
+}
+
+export interface PaginatedBookingsResult {
+  data: Booking[];
+  total: number;
+}
+
 
 //  * Contrato del repositorio de Bookings.
 //  * La capa de infraestructura debe implementar esta interfaz.
@@ -13,6 +25,8 @@ export interface IBookingRepository {
   findBookingById(id: string): Promise<Booking | null>;
 
   findBookingAll(filters?: BookingFilters): Promise<Booking[]>;
+
+  findBookingPaginated(query: PaginatedBookingsQuery): Promise<PaginatedBookingsResult>;
 
   findOccupiedSlotsByChivaAndDate(
     chivaId: string,

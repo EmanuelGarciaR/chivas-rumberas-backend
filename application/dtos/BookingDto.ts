@@ -38,3 +38,20 @@ export interface BookingResponseDto {
   notes?: string;
   createdAt: string;      // ISO string
 }
+
+export interface GetBookingsQueryDto {
+  page?: number;
+  limit?: number;
+  status?: BookingStatus;
+  q?: string;
+}
+
+export interface PaginatedBookingsResponseDto {
+  data: BookingResponseDto[];
+  meta: {
+    page: number;
+    limit: number;
+    total: number;
+    totalPages: number;
+  };
+}
