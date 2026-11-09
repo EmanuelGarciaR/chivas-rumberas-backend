@@ -55,3 +55,20 @@ export interface PaginatedBookingsResponseDto {
     totalPages: number;
   };
 }
+
+export interface TrackBookingResponseDto {
+  id: string;
+  code: string;
+  status: BookingStatus;
+  createdAt: string;
+  chivaId: string;
+  chivaName: string;
+  travelId: string;
+  travelName: string;
+  eventDate: string;
+  startTime: string;
+  endTime: string;
+  durationHours: number;
+  guestCount: number;
+  totalPrice: number;
+}

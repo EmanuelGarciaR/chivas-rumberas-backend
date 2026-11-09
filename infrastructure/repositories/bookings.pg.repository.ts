@@ -147,6 +147,7 @@ export class BookingRepository implements IBookingRepository {
         id: booking.id,
         chivaId: booking.chivaId,
         travelId: booking.travel,   // En Booking.travel almacenamos el travelId
+        customerId: booking.customerId,
         customerName: booking.customerName,
         customerEmail: booking.customerEmail,
         customerPhone: booking.customerPhone,
@@ -157,6 +158,10 @@ export class BookingRepository implements IBookingRepository {
         totalPrice: booking.totalPrice,
         status: booking.status,
         notes: booking.notes,
+      },
+      include: {
+        chiva: { select: { name: true } },
+        travel: { select: { name: true } },
       },
     });
     return this.toDomain(row);
@@ -179,6 +184,7 @@ export class BookingRepository implements IBookingRepository {
       id: row.id,
       chivaId: row.chivaId,
       chivaName: row.chiva?.name,
+      customerId: row.customerId ?? undefined,
       customerName: row.customerName,
       customerEmail: row.customerEmail,
       customerPhone: row.customerPhone,

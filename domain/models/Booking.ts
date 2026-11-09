@@ -4,6 +4,7 @@ export interface Booking {
   id: string;
   chivaId: string;
   chivaName?: string;
+  customerId?: string;
   customerName: string;
   customerEmail: string;
   customerPhone: string;

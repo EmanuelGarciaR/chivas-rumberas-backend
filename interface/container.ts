@@ -9,6 +9,7 @@ import { ChivaRepository } from "../infrastructure/repositories/chivas.pg.reposi
 import { BookingRepository } from "../infrastructure/repositories/bookings.pg.repository";
 import { TravelRepository } from "../infrastructure/repositories/travels.pg.repository";
 import { UserRepository } from "../infrastructure/repositories/users.pg.repository";
+import { CustomerRepository } from "../infrastructure/repositories/customers.pg.repository";
 import { JwtService } from "../infrastructure/services/JwtService";
 import { EmailResendService } from "../infrastructure/services/email.resend.service";
 // import { WhatsAppTwilioService } from "../infrastructure/services/whatsapp.twilio.service";
@@ -29,6 +30,7 @@ import { GetAvailabilityUseCase } from "../application/use-cases/booking/GetAvai
 import { GetBookingByIdUseCase } from "../application/use-cases/booking/GetBookingById";
 import { GetBookingsUseCase } from "../application/use-cases/booking/GetBookings";
 import { UpdateBookingStatusUseCase } from "../application/use-cases/booking/UpdateBookingStatus";
+import { TrackBookingUseCase } from "../application/use-cases/booking/TrackBooking";
 
 // ── Interface — Controllers ────────────────────────────────────────────────
 import { AuthController } from "../interface/controllers/auth.controller";
@@ -42,6 +44,7 @@ const chivaRepository = new ChivaRepository();
 const bookingRepository = new BookingRepository();
 const travelRepository = new TravelRepository();
 const userRepository = new UserRepository();
+const customerRepository = new CustomerRepository();
 const jwtService = new JwtService();
 const emailService = new EmailResendService();
 // const whatsAppService = new WhatsAppTwilioService();
@@ -61,7 +64,8 @@ const createBookingUseCase = new CreateBookingUseCase(
   bookingRepository,
   chivaRepository,
   travelRepository,
-  notificationService
+  notificationService,
+  customerRepository
 );
 const getAvailabilityUseCase = new GetAvailabilityUseCase(bookingRepository, chivaRepository);
 const getBookingByIdUseCase = new GetBookingByIdUseCase(bookingRepository);
@@ -73,6 +77,11 @@ const getBookingsUseCase = new GetBookingsUseCase(
 const updateBookingStatusUseCase = new UpdateBookingStatusUseCase(
   bookingRepository,
   notificationService
+);
+const trackBookingUseCase = new TrackBookingUseCase(
+  bookingRepository,
+  chivaRepository,
+  travelRepository
 );
 
 // ── Controladores ──────────────────────────────────────────────────────────
@@ -91,7 +100,8 @@ export const bookingsController = new BookingsController(
   getAvailabilityUseCase,
   getBookingByIdUseCase,
   updateBookingStatusUseCase,
-  getBookingsUseCase
+  getBookingsUseCase,
+  trackBookingUseCase
 );
 export const uploadsController = new UploadsController(imageStorage);
 

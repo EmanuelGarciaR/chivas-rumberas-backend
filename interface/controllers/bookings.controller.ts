@@ -5,6 +5,7 @@ import { GetAvailabilityUseCase } from "../../application/use-cases/booking/GetA
 import { GetBookingByIdUseCase } from "../../application/use-cases/booking/GetBookingById";
 import { UpdateBookingStatusUseCase } from "../../application/use-cases/booking/UpdateBookingStatus";
 import { GetBookingsUseCase } from "../../application/use-cases/booking/GetBookings";
+import { TrackBookingUseCase } from "../../application/use-cases/booking/TrackBooking";
 import { CreateBookingDto } from "../../application/dtos/BookingDto";
 import { BookingStatus } from "../../domain/models/Booking";
 import { ValidationError } from "../../domain/errors/DomainErrors";
@@ -14,6 +15,17 @@ const ACCEPTED_BOOKING_STATUSES: BookingStatus[] = [
   "cancelled",
   "completed",
 ];
+
+const trackBookingQuerySchema = z.object({
+  code: z
+    .string({ message: "El parámetro code es requerido." })
+    .trim()
+    .min(1, "El parámetro code es requerido."),
+  email: z
+    .string({ message: "El parámetro email es requerido." })
+    .trim()
+    .email("El parámetro email debe ser un correo válido."),
+});
 
 const getBookingsQuerySchema = z.object({
   page: z
@@ -54,7 +66,8 @@ export class BookingsController {
     private readonly getAvailabilityUseCase: GetAvailabilityUseCase,
     private readonly getBookingByIdUseCase: GetBookingByIdUseCase,
     private readonly updateBookingStatusUseCase: UpdateBookingStatusUseCase,
-    private readonly getBookingsUseCase: GetBookingsUseCase
+    private readonly getBookingsUseCase: GetBookingsUseCase,
+    private readonly trackBookingUseCase?: TrackBookingUseCase
   ) {}
 
   getAll = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
@@ -66,6 +79,26 @@ export class BookingsController {
       }
       const bookings = await this.getBookingsUseCase.execute(parsed.data);
       res.status(200).json(bookings);
+    } catch (err) {
+      next(err);
+    }
+  };
+
+  /** GET /bookings/track?code=&email= — Público: seguimiento de reserva por código y correo */
+  track = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
+    try {
+      const parsed = trackBookingQuerySchema.safeParse(req.query);
+      if (!parsed.success) {
+        const message = parsed.error.issues[0]?.message ?? "code y email son requeridos.";
+        throw new ValidationError(message);
+      }
+
+      if (!this.trackBookingUseCase) {
+        throw new Error("TrackBookingUseCase no configurado.");
+      }
+
+      const result = await this.trackBookingUseCase.execute(parsed.data);
+      res.status(200).json(result);
     } catch (err) {
       next(err);
     }

@@ -1,6 +1,7 @@
 import { Router } from "express";
 import { BookingsController } from "../controllers/bookings.controller";
 import { createAuthMiddleware, requireRole } from "../middlewares/auth.middleware";
+import { trackBookingRateLimiter } from "../middlewares/rate-limit.middleware";
 import { IJwtService } from "../../application/ports/IJwtService";
 
 export const createBookingsRouter = (
@@ -13,6 +14,9 @@ export const createBookingsRouter = (
   // ── Rutas PÚBLICAS ────────────────────────────────────────────────────────
   /** GET /bookings/availability?chivaId=&date= — Para el calendario */
   router.get("/availability", controller.getAvailability);
+
+  /** GET /bookings/track?code=CR-XXXXXX&email=... — Seguimiento público */
+  router.get("/track", trackBookingRateLimiter, controller.track);
 
   /** POST /bookings — El cliente hace una reserva */
   router.post("/", controller.create);

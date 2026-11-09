@@ -5,7 +5,16 @@ import { BookingResponseDto } from "../../application/dtos/BookingDto";
  * Mantener separadas de la lógica de envío para facilitar cambios de diseño.
  */
 
-export const bookingConfirmationTemplate = (booking: BookingResponseDto): string => `
+export const getTrackingUrl = (bookingCode: string): string => {
+  const baseUrl = (process.env.FRONTEND_URL ?? "http://localhost:3000")
+    .trim()
+    .replace(/\/+$/, "");
+  return `${baseUrl}/seguimiento?code=${encodeURIComponent(bookingCode)}`;
+};
+
+export const bookingConfirmationTemplate = (booking: BookingResponseDto): string => {
+  const trackingUrl = getTrackingUrl(booking.id);
+  return `
 <!DOCTYPE html>
 <html lang="es">
 <head>
@@ -24,6 +33,7 @@ export const bookingConfirmationTemplate = (booking: BookingResponseDto): string
     .total { background-color: #FFF8E7; padding: 15px; border-radius: 6px; margin-top: 20px; text-align: right; font-size: 18px; font-weight: bold; color: #D4A017; }
     .footer { background-color: #333333; padding: 20px; text-align: center; color: #aaaaaa; font-size: 12px; }
     .badge { display: inline-block; background-color: #D4A017; color: white; padding: 4px 12px; border-radius: 20px; font-size: 12px; font-weight: bold; }
+    .btn-track { display: inline-block; margin-top: 20px; background-color: #D4A017; color: #ffffff; text-decoration: none; padding: 12px 20px; border-radius: 6px; font-weight: bold; }
   </style>
 </head>
 <body>
@@ -68,6 +78,11 @@ export const bookingConfirmationTemplate = (booking: BookingResponseDto): string
         Total: $${booking.totalPrice.toLocaleString("es-CO")} COP
       </div>
 
+      <p style="margin-top: 20px;">
+        Puedes consultar el estado de tu reserva en cualquier momento aquí:<br />
+        <a class="btn-track" href="${trackingUrl}">${trackingUrl}</a>
+      </p>
+
       <p style="margin-top: 24px; color: #666666; font-size: 14px;">
         Nos pondremos en contacto contigo pronto para confirmar tu reserva y coordinar el pago.
         Si tienes alguna pregunta, responde a este correo.
@@ -80,6 +95,7 @@ export const bookingConfirmationTemplate = (booking: BookingResponseDto): string
 </body>
 </html>
 `;
+};
 
 export const bookingStatusUpdateTemplate = ( booking: BookingResponseDto, previousStatus: string ): string => {
   const statusLabels: Record<string, string> = {
@@ -98,6 +114,7 @@ export const bookingStatusUpdateTemplate = ( booking: BookingResponseDto, previo
 
   const color = statusColors[booking.status] ?? "#333333";
   const label = statusLabels[booking.status] ?? booking.status;
+  const trackingUrl = getTrackingUrl(booking.id);
 
   return `
 <!DOCTYPE html>
@@ -112,6 +129,7 @@ export const bookingStatusUpdateTemplate = ( booking: BookingResponseDto, previo
     .header h1 { color: #ffffff; margin: 0; font-size: 22px; }
     .body { padding: 30px; color: #333333; }
     .footer { background-color: #333333; padding: 20px; text-align: center; color: #aaaaaa; font-size: 12px; }
+    .btn-track { display: inline-block; margin-top: 16px; background-color: ${color}; color: #ffffff; text-decoration: none; padding: 10px 18px; border-radius: 6px; font-weight: bold; }
   </style>
 </head>
 <body>
@@ -130,6 +148,10 @@ export const bookingStatusUpdateTemplate = ( booking: BookingResponseDto, previo
       ${booking.status === "cancelled"
         ? "<p>Si crees que esto fue un error, por favor contáctanos respondiendo este correo.</p>"
         : ""}
+      <p style="margin-top: 20px;">
+        Consulta los detalles y el seguimiento de tu reserva en:<br />
+        <a class="btn-track" href="${trackingUrl}">${trackingUrl}</a>
+      </p>
     </div>
     <div class="footer">
       <p>Chivas Rumberas © ${new Date().getFullYear()}</p>

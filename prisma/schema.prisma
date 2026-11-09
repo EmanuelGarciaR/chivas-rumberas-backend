@@ -41,10 +41,23 @@ model Travel {
   @@map("travels")
 }
 
+model Customer {
+  id        String   @id @default(uuid())
+  name      String
+  email     String   @unique
+  phone     String
+  createdAt DateTime @default(now())
+
+  bookings Booking[]
+
+  @@map("customers")
+}
+
 model Booking {
   id            String        @id
   chivaId       String
   travelId      String
+  customerId    String?
   customerName  String
   customerEmail String
   customerPhone String
@@ -58,8 +71,9 @@ model Booking {
   createdAt     DateTime      @default(now())
   updatedAt     DateTime      @updatedAt
 
-  chiva  Chiva  @relation(fields: [chivaId], references: [id])
-  travel Travel @relation(fields: [travelId], references: [id])
+  chiva    Chiva     @relation(fields: [chivaId], references: [id])
+  travel   Travel    @relation(fields: [travelId], references: [id])
+  customer Customer? @relation(fields: [customerId], references: [id])
 
   @@map("bookings")
 }

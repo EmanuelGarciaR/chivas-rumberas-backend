@@ -41,8 +41,12 @@ export class BookingConflictError extends DomainError {
 }
 
 export class BookingNotFoundError extends DomainError {
-  constructor(bookingId: string) {
-    super(`La reserva con ID "${bookingId}" no fue encontrada.`);
+  constructor(bookingId?: string) {
+    super(
+      bookingId
+        ? `La reserva con ID "${bookingId}" no fue encontrada.`
+        : "No se encontró ninguna reserva con los datos proporcionados."
+    );
     this.name = "BookingNotFoundError";
   }
 }
