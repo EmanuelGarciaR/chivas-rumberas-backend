@@ -1,4 +1,4 @@
-import { Booking, BookingStatus } from "../models/Booking";
+import { Booking, BookingStatus, CalendarSyncStatus } from "../models/Booking";
 
 export interface BookingFilters {
   chivaId?: string;
@@ -46,4 +46,9 @@ export interface IBookingRepository {
   saveBooking(booking: Booking): Promise<Booking>;
 
   updateBookingStatus(id: string, status: BookingStatus): Promise<Booking>;
+
+  updateBookingCalendarSync(
+    id: string,
+    data: { googleEventId?: string | null; calendarSyncStatus: CalendarSyncStatus }
+  ): Promise<Booking>;
 }

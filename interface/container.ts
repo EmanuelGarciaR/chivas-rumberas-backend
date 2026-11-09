@@ -15,6 +15,7 @@ import { EmailResendService } from "../infrastructure/services/email.resend.serv
 // import { WhatsAppTwilioService } from "../infrastructure/services/whatsapp.twilio.service";
 import { NotificationService } from "../infrastructure/services/NotificationService";
 import { CloudinaryImageStorage } from "../infrastructure/services/cloudinary.storage.service";
+import { GoogleCalendarService } from "../infrastructure/services/google-calendar.service";
 
 // ── Application — Use Cases ────────────────────────────────────────────────
 import { LoginUseCase } from "../application/use-cases/auth/Login";
@@ -31,6 +32,7 @@ import { GetBookingByIdUseCase } from "../application/use-cases/booking/GetBooki
 import { GetBookingsUseCase } from "../application/use-cases/booking/GetBookings";
 import { UpdateBookingStatusUseCase } from "../application/use-cases/booking/UpdateBookingStatus";
 import { TrackBookingUseCase } from "../application/use-cases/booking/TrackBooking";
+import { SyncBookingCalendarUseCase } from "../application/use-cases/booking/SyncBookingCalendar";
 
 // ── Interface — Controllers ────────────────────────────────────────────────
 import { AuthController } from "../interface/controllers/auth.controller";
@@ -50,6 +52,7 @@ const emailService = new EmailResendService();
 // const whatsAppService = new WhatsAppTwilioService();
 const notificationService = new NotificationService(emailService);
 const imageStorage = new CloudinaryImageStorage();
+const calendarService = new GoogleCalendarService();
 
 // ── Casos de uso ───────────────────────────────────────────────────────────
 const loginUseCase = new LoginUseCase(userRepository, jwtService);
@@ -76,10 +79,19 @@ const getBookingsUseCase = new GetBookingsUseCase(
 );
 const updateBookingStatusUseCase = new UpdateBookingStatusUseCase(
   bookingRepository,
-  notificationService
+  notificationService,
+  calendarService,
+  chivaRepository,
+  travelRepository
 );
 const trackBookingUseCase = new TrackBookingUseCase(
   bookingRepository,
+  chivaRepository,
+  travelRepository
+);
+const syncBookingCalendarUseCase = new SyncBookingCalendarUseCase(
+  bookingRepository,
+  calendarService,
   chivaRepository,
   travelRepository
 );
@@ -101,7 +113,8 @@ export const bookingsController = new BookingsController(
   getBookingByIdUseCase,
   updateBookingStatusUseCase,
   getBookingsUseCase,
-  trackBookingUseCase
+  trackBookingUseCase,
+  syncBookingCalendarUseCase
 );
 export const uploadsController = new UploadsController(imageStorage);
 

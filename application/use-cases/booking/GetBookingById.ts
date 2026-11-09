@@ -19,9 +19,9 @@ export class GetBookingByIdUseCase {
     return {
       id: booking.id,
       chivaId: booking.chivaId,
-      chivaName: "",
+      chivaName: booking.chivaName ?? "",
       travelId: booking.travel,
-      travelName: booking.travel,
+      travelName: booking.travelName ?? booking.travel,
       customerName: booking.customerName,
       customerEmail: booking.customerEmail,
       customerPhone: booking.customerPhone,
@@ -33,6 +33,7 @@ export class GetBookingByIdUseCase {
       totalPrice: booking.totalPrice,
       status: booking.status,
       notes: booking.notes,
+      calendarSyncStatus: booking.calendarSyncStatus ?? "pending",
       createdAt: booking.createdAt.toISOString(),
     };
   }

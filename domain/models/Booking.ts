@@ -1,4 +1,5 @@
 export type BookingStatus = "pending" | "confirmed" | "cancelled" | "completed";
+export type CalendarSyncStatus = "pending" | "synced" | "failed";
 
 export interface Booking {
   id: string;
@@ -17,6 +18,8 @@ export interface Booking {
   totalPrice: number;
   status: BookingStatus;
   notes?: string;
+  googleEventId?: string | null;
+  calendarSyncStatus?: CalendarSyncStatus;
   createdAt: Date;
   updatedAt: Date;
 }

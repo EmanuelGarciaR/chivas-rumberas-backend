@@ -6,6 +6,7 @@ import { GetBookingByIdUseCase } from "../../application/use-cases/booking/GetBo
 import { UpdateBookingStatusUseCase } from "../../application/use-cases/booking/UpdateBookingStatus";
 import { GetBookingsUseCase } from "../../application/use-cases/booking/GetBookings";
 import { TrackBookingUseCase } from "../../application/use-cases/booking/TrackBooking";
+import { SyncBookingCalendarUseCase } from "../../application/use-cases/booking/SyncBookingCalendar";
 import { CreateBookingDto } from "../../application/dtos/BookingDto";
 import { BookingStatus } from "../../domain/models/Booking";
 import { ValidationError } from "../../domain/errors/DomainErrors";
@@ -67,7 +68,8 @@ export class BookingsController {
     private readonly getBookingByIdUseCase: GetBookingByIdUseCase,
     private readonly updateBookingStatusUseCase: UpdateBookingStatusUseCase,
     private readonly getBookingsUseCase: GetBookingsUseCase,
-    private readonly trackBookingUseCase?: TrackBookingUseCase
+    private readonly trackBookingUseCase?: TrackBookingUseCase,
+    private readonly syncBookingCalendarUseCase?: SyncBookingCalendarUseCase
   ) {}
 
   getAll = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
@@ -175,6 +177,21 @@ export class BookingsController {
         id,
         status as BookingStatus
       );
+      res.status(200).json(booking);
+    } catch (err) {
+      next(err);
+    }
+  };
+
+  /** POST /bookings/:id/calendar-sync — Protegido (admin): reintenta sincronización con Google Calendar */
+  syncCalendar = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
+    try {
+      const id = req.params.id as string;
+      if (!this.syncBookingCalendarUseCase) {
+        throw new Error("SyncBookingCalendarUseCase no configurado.");
+      }
+
+      const booking = await this.syncBookingCalendarUseCase.execute(id);
       res.status(200).json(booking);
     } catch (err) {
       next(err);

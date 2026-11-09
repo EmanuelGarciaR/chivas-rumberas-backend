@@ -4,7 +4,7 @@ import {
   PaginatedBookingsQuery,
   PaginatedBookingsResult,
 } from "../../domain/repositories/IBookingRepository";
-import { Booking, BookingStatus } from "../../domain/models/Booking";
+import { Booking, BookingStatus, CalendarSyncStatus } from "../../domain/models/Booking";
 import { Prisma } from "@prisma/client";
 import prisma from "../database/prismaClient";
 
@@ -179,6 +179,24 @@ export class BookingRepository implements IBookingRepository {
     return this.toDomain(row);
   }
 
+  async updateBookingCalendarSync(
+    id: string,
+    data: { googleEventId?: string | null; calendarSyncStatus: CalendarSyncStatus }
+  ): Promise<Booking> {
+    const row = await prisma.booking.update({
+      where: { id },
+      data: {
+        ...(data.googleEventId !== undefined && { googleEventId: data.googleEventId }),
+        calendarSyncStatus: data.calendarSyncStatus,
+      },
+      include: {
+        chiva: { select: { name: true } },
+        travel: { select: { name: true } },
+      },
+    });
+    return this.toDomain(row);
+  }
+
   private toDomain(row: any): Booking {
     return {
       id: row.id,
@@ -197,6 +215,8 @@ export class BookingRepository implements IBookingRepository {
       totalPrice: row.totalPrice,
       status: row.status as BookingStatus,
       notes: row.notes ?? undefined,
+      googleEventId: row.googleEventId ?? null,
+      calendarSyncStatus: (row.calendarSyncStatus ?? "pending") as CalendarSyncStatus,
       createdAt: row.createdAt,
       updatedAt: row.updatedAt,
     };

@@ -82,6 +82,7 @@ export class GetBookingsUseCase {
           totalPrice: booking.totalPrice,
           status: booking.status,
           notes: booking.notes,
+          calendarSyncStatus: booking.calendarSyncStatus ?? "pending",
           createdAt: booking.createdAt.toISOString(),
         };
       })

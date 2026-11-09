@@ -31,5 +31,8 @@ export const createBookingsRouter = (
   /** PATCH /bookings/:id/status */
   router.patch("/:id/status", auth, controller.updateStatus);
 
+  /** POST /bookings/:id/calendar-sync — Solo administradores */
+  router.post("/:id/calendar-sync", auth, requireRole("admin"), controller.syncCalendar);
+
   return router;
 };

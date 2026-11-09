@@ -54,22 +54,24 @@ model Customer {
 }
 
 model Booking {
-  id            String        @id
-  chivaId       String
-  travelId      String
-  customerId    String?
-  customerName  String
-  customerEmail String
-  customerPhone String
-  guestCount    Int
-  eventDate     DateTime
-  startTime     String        // "HH:mm"
-  durationHours Float
-  totalPrice    Float
-  status        BookingStatus @default(pending)
-  notes         String?
-  createdAt     DateTime      @default(now())
-  updatedAt     DateTime      @updatedAt
+  id                 String             @id
+  chivaId            String
+  travelId           String
+  customerId         String?
+  customerName       String
+  customerEmail      String
+  customerPhone      String
+  guestCount         Int
+  eventDate          DateTime
+  startTime          String             // "HH:mm"
+  durationHours      Float
+  totalPrice         Float
+  status             BookingStatus      @default(pending)
+  notes              String?
+  googleEventId      String?
+  calendarSyncStatus CalendarSyncStatus @default(pending)
+  createdAt          DateTime           @default(now())
+  updatedAt          DateTime           @updatedAt
 
   chiva    Chiva     @relation(fields: [chivaId], references: [id])
   travel   Travel    @relation(fields: [travelId], references: [id])
@@ -99,6 +101,12 @@ enum BookingStatus {
   confirmed
   cancelled
   completed
+}
+
+enum CalendarSyncStatus {
+  pending
+  synced
+  failed
 }
 
 enum UserRole {

@@ -1,4 +1,4 @@
-import { BookingStatus } from "../../domain/models/Booking";
+import { BookingStatus, CalendarSyncStatus } from "../../domain/models/Booking";
 
 /**
  * DTO de entrada: datos del formulario para crear una reserva.
@@ -36,6 +36,7 @@ export interface BookingResponseDto {
   totalPrice: number;
   status: BookingStatus;
   notes?: string;
+  calendarSyncStatus?: CalendarSyncStatus;
   createdAt: string;      // ISO string
 }
 
