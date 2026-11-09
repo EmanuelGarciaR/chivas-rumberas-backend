@@ -1,0 +1,16 @@
+info:
+  name: deleteChiva
+  type: http
+
+http:
+  method: DELETE
+  url: http://localhost:3000/chivas/la-sabrosura
+  auth:
+    type: bearer
+    token: TOKEN
+
+settings:
+  encodeUrl: true
+  timeout: 0
+  followRedirects: true
+  maxRedirects: 5

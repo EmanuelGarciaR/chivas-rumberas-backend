@@ -1,0 +1,21 @@
+info:
+  name: trackBooking
+  type: http
+
+http:
+  method: GET
+  url: http://localhost:3000/bookings/track?code=CR-SEED01&email=carolina.montoya@ejemplo.com
+  params:
+    - name: code
+      value: CR-SEED01
+      type: query
+    - name: email
+      value: carolina.montoya@ejemplo.com
+      type: query
+  auth: inherit
+
+settings:
+  encodeUrl: true
+  timeout: 0
+  followRedirects: true
+  maxRedirects: 5

@@ -1,5 +1,6 @@
 import express from "express";
 import cors from "cors";
+import helmet from "helmet";
 import { errorHandler } from "./middlewares/error.middleware";
 import { createAuthRouter } from "./routes/auth.routes";
 import { createChivasRouter } from "./routes/chivas.routes";
@@ -18,7 +19,10 @@ import {
 const app = express();
 
 // ── Middlewares globales ───────────────────────────────────────────────────
-const configuredOrigins = process.env.CORS_ORIGIN
+app.use(helmet());
+
+const rawCorsOrigins = process.env.CORS_ORIGINS ?? process.env.CORS_ORIGIN;
+const configuredOrigins = rawCorsOrigins
   ?.split(",")
   .map((origin) => origin.trim().replace(/\/+$/, ""))
   .filter(Boolean);

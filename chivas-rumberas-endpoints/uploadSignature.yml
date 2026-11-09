@@ -1,0 +1,16 @@
+info:
+  name: uploadSignature
+  type: http
+
+http:
+  method: GET
+  url: http://localhost:3000/uploads/signature
+  auth:
+    type: bearer
+    token: TOKEN
+
+settings:
+  encodeUrl: true
+  timeout: 0
+  followRedirects: true
+  maxRedirects: 5
