@@ -13,13 +13,16 @@ import { JwtService } from "../infrastructure/services/JwtService";
 import { EmailResendService } from "../infrastructure/services/email.resend.service";
 // import { WhatsAppTwilioService } from "../infrastructure/services/whatsapp.twilio.service";
 import { NotificationService } from "../infrastructure/services/NotificationService";
+import { CloudinaryImageStorage } from "../infrastructure/services/cloudinary.storage.service";
 
 // ── Application — Use Cases ────────────────────────────────────────────────
 import { LoginUseCase } from "../application/use-cases/auth/Login";
 import { GetChivasUseCase } from "../application/use-cases/chiva/GetChivas";
 import { GetChivaByIdUseCase } from "../application/use-cases/chiva/GetChivaById";
+import { CreateChivaUseCase } from "../application/use-cases/chiva/CreateChiva";
 import { UpdateChivaUseCase } from "../application/use-cases/chiva/UpdateChiva";
 import { UpdateChivaStatusUseCase } from "../application/use-cases/chiva/UpdateChivaStatus";
+import { DeleteChivaUseCase } from "../application/use-cases/chiva/DeleteChiva";
 import { GetTravelsUseCase } from "../application/use-cases/travel/GetTravels";
 import { CreateBookingUseCase } from "../application/use-cases/booking/CreateBooking";
 import { GetAvailabilityUseCase } from "../application/use-cases/booking/GetAvailability";
@@ -32,6 +35,7 @@ import { AuthController } from "../interface/controllers/auth.controller";
 import { ChivasController } from "../interface/controllers/chivas.controller";
 import { TravelsController } from "../interface/controllers/travels.controller";
 import { BookingsController } from "../interface/controllers/bookings.controller";
+import { UploadsController } from "../interface/controllers/uploads.controller";
 
 // ── Instancias de repositorios y servicios ─────────────────────────────────
 const chivaRepository = new ChivaRepository();
@@ -42,13 +46,16 @@ const jwtService = new JwtService();
 const emailService = new EmailResendService();
 // const whatsAppService = new WhatsAppTwilioService();
 const notificationService = new NotificationService(emailService);
+const imageStorage = new CloudinaryImageStorage();
 
 // ── Casos de uso ───────────────────────────────────────────────────────────
 const loginUseCase = new LoginUseCase(userRepository, jwtService);
 const getChivasUseCase = new GetChivasUseCase(chivaRepository);
 const getChivaByIdUseCase = new GetChivaByIdUseCase(chivaRepository);
+const createChivaUseCase = new CreateChivaUseCase(chivaRepository);
 const updateChivaUseCase = new UpdateChivaUseCase(chivaRepository);
 const updateChivaStatusUseCase = new UpdateChivaStatusUseCase(chivaRepository);
+const deleteChivaUseCase = new DeleteChivaUseCase(chivaRepository, bookingRepository);
 const getTravelsUseCase = new GetTravelsUseCase(travelRepository);
 const createBookingUseCase = new CreateBookingUseCase(
   bookingRepository,
@@ -74,7 +81,9 @@ export const chivasController = new ChivasController(
   getChivasUseCase,
   getChivaByIdUseCase,
   updateChivaUseCase,
-  updateChivaStatusUseCase
+  updateChivaStatusUseCase,
+  createChivaUseCase,
+  deleteChivaUseCase
 );
 export const travelsController = new TravelsController(getTravelsUseCase);
 export const bookingsController = new BookingsController(
@@ -84,6 +93,7 @@ export const bookingsController = new BookingsController(
   updateBookingStatusUseCase,
   getBookingsUseCase
 );
+export const uploadsController = new UploadsController(imageStorage);
 
 // Exportamos el jwtService para usarlo en los routers que necesitan auth
 export { jwtService };

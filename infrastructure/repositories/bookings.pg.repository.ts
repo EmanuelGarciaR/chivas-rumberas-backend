@@ -123,6 +123,24 @@ export class BookingRepository implements IBookingRepository {
     });
   }
 
+  async hasFutureActiveBookingsByChiva(
+    chivaId: string,
+    fromDate: Date = new Date()
+  ): Promise<boolean> {
+    const todayStr = fromDate.toISOString().split("T")[0];
+    const startOfToday = new Date(todayStr + "T00:00:00.000Z");
+
+    const count = await prisma.booking.count({
+      where: {
+        chivaId,
+        status: { in: ["pending", "confirmed"] },
+        eventDate: { gte: startOfToday },
+      },
+    });
+
+    return count > 0;
+  }
+
   async saveBooking(booking: Booking): Promise<Booking> {
     const row = await prisma.booking.create({
       data: {

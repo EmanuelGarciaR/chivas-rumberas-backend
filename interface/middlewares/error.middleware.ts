@@ -17,6 +17,7 @@ const domainErrorToStatus = (error: Error): number => {
     // 409 — Conflict
     ChivaNotAvailableError: 409,
     BookingConflictError: 409,
+    ChivaHasActiveBookingsError: 409,
 
     // 422 — Unprocessable Entity
     InvalidBookingStatusTransitionError: 422,

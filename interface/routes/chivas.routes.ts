@@ -13,11 +13,17 @@ export const createChivasRouter = (controller: ChivasController, jwtService: IJw
   /** GET /chivas/:id — Público */
   router.get("/:id", controller.getById);
 
+  /** POST /chivas — Solo administradores */
+  router.post("/", auth, requireRole("admin"), controller.create);
+
   /** PATCH /chivas/:id/status — Solo administradores */
   router.patch("/:id/status", auth, requireRole("admin"), controller.updateStatus);
 
   /** PATCH /chivas/:id — Solo administradores */
   router.patch("/:id", auth, requireRole("admin"), controller.update);
+
+  /** DELETE /chivas/:id — Solo administradores (borrado lógico) */
+  router.delete("/:id", auth, requireRole("admin"), controller.delete);
 
   return router;
 };

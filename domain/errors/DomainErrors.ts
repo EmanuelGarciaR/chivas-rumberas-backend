@@ -60,3 +60,12 @@ export class TravelNotFoundError extends DomainError {
     this.name = "TravelNotFoundError";
   }
 }
+
+export class ChivaHasActiveBookingsError extends DomainError {
+  constructor(chivaId: string) {
+    super(
+      `No se puede retirar la chiva "${chivaId}" porque tiene reservas futuras pendientes o confirmadas.`
+    );
+    this.name = "ChivaHasActiveBookingsError";
+  }
+}

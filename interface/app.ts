@@ -5,11 +5,13 @@ import { createAuthRouter } from "./routes/auth.routes";
 import { createChivasRouter } from "./routes/chivas.routes";
 import { createTravelsRouter } from "./routes/travels.routes";
 import { createBookingsRouter } from "./routes/bookings.routes";
+import { createUploadsRouter } from "./routes/uploads.routes";
 import {
   authController,
   chivasController,
   travelsController,
   bookingsController,
+  uploadsController,
   jwtService,
 } from "./container";
 
@@ -39,6 +41,7 @@ app.use("/auth", createAuthRouter(authController));
 app.use("/chivas", createChivasRouter(chivasController, jwtService));
 app.use("/travels", createTravelsRouter(travelsController));
 app.use("/bookings", createBookingsRouter(bookingsController, jwtService));
+app.use("/uploads", createUploadsRouter(uploadsController, jwtService));
 
 // ── Manejo global de errores (siempre al final) ───────────────────────────
 app.use(errorHandler);

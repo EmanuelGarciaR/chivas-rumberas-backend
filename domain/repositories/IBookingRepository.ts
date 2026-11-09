@@ -41,6 +41,8 @@ export interface IBookingRepository {
     excludeBookingId?: string
   ): Promise<boolean>;
 
+  hasFutureActiveBookingsByChiva(chivaId: string, fromDate?: Date): Promise<boolean>;
+
   saveBooking(booking: Booking): Promise<Booking>;
 
   updateBookingStatus(id: string, status: BookingStatus): Promise<Booking>;

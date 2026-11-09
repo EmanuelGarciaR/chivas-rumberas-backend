@@ -14,7 +14,22 @@ export interface ChivaResponseDto {
   features: string[];
 }
 
-export interface UpdateChivaDto {
-  pricePerHour?: number;
+export interface CreateChivaDto {
+  name: string;
+  description: string;
+  capacity: number;
+  pricePerHour: number;
+  features?: string[];
   status?: ChivaStatus;
+  imageUrls?: string[];
+}
+
+export interface UpdateChivaDto {
+  name?: string;
+  description?: string;
+  capacity?: number;
+  pricePerHour?: number;
+  features?: string[];
+  status?: ChivaStatus;
+  imageUrls?: string[];
 }
