@@ -277,6 +277,91 @@ Obtiene la información detallada de una chiva específica por su identificador.
 
 ---
 
+#### `POST /chivas`
+Crea una nueva chiva en el catálogo. Genera el `id` (slug) automáticamente a partir del nombre y evita colisiones agregando sufijos numéricos (`-2`, `-3`, etc.).
+
+- **Acceso**: **Protegido (Rol `admin`)**
+- **Cuerpo de la petición (JSON)**:
+```json
+{
+  "name": "La Sabrosura",
+  "description": "Chiva rumbera con pista iluminada y sonido profesional.",
+  "capacity": 45,
+  "pricePerHour": 290000,
+  "features": ["Sonido 4000W", "Luces LED", "DJ en vivo"],
+  "status": "available",
+  "imageUrls": [
+    "https://res.cloudinary.com/demo/image/upload/v1/chivas-rumberas/chivas/foto1.webp"
+  ]
+}
+```
+- **Respuesta (201 Created)**: Retorna el objeto `ChivaResponseDto` creado.
+- **Errores posibles**: `400 Bad Request` (`ValidationError`, máx. 10 imágenes), `401 Unauthorized`, `403 Forbidden`.
+
+---
+
+#### `PATCH /chivas/:id`
+Actualización parcial de los datos de una chiva, incluido el reordenamiento o eliminación de `imageUrls` (el primer elemento `imageUrls[0]` es la foto principal).
+
+- **Acceso**: **Protegido (Rol `admin`)**
+- **Cuerpo de la petición (JSON)** *(todos los campos opcionales, al menos uno requerido)*:
+```json
+{
+  "name": "La Coqueta Renovada",
+  "pricePerHour": 300000,
+  "imageUrls": [
+    "https://res.cloudinary.com/demo/image/upload/v1/chivas-rumberas/chivas/principal.webp",
+    "https://res.cloudinary.com/demo/image/upload/v1/chivas-rumberas/chivas/secundaria.webp"
+  ]
+}
+```
+- **Respuesta (200 OK)**: Retorna el objeto `ChivaResponseDto` actualizado.
+- **Errores posibles**: `400 Bad Request`, `401 Unauthorized`, `403 Forbidden`, `404 Not Found`.
+
+---
+
+#### `PATCH /chivas/:id/status`
+Cambia exclusivamente el estado operativo de una chiva (`available`, `maintenance`, `retired`).
+
+- **Acceso**: **Protegido (Rol `admin`)**
+- **Cuerpo de la petición (JSON)**:
+```json
+{
+  "status": "maintenance"
+}
+```
+- **Respuesta (200 OK)**: Retorna el objeto `ChivaResponseDto` actualizado.
+
+---
+
+#### `DELETE /chivas/:id`
+Realiza el borrado lógico de una chiva cambiando su estado a `retired`. Si la chiva tiene reservas futuras con estado `pending` o `confirmed`, responde con `409 Conflict`.
+
+- **Acceso**: **Protegido (Rol `admin`)**
+- **Respuesta (200 OK)**: Retorna el objeto `ChivaResponseDto` con `"status": "retired"`.
+- **Errores posibles**: `401 Unauthorized`, `403 Forbidden`, `404 Not Found`, `409 Conflict` (`ChivaHasActiveBookingsError`).
+
+---
+
+#### `GET /uploads/signature`
+Genera la firma criptográfica para subida directa firmada a Cloudinary desde el navegador (evitando el límite de ~4.5 MB de body en Vercel). Restringe carpeta (`chivas-rumberas/chivas`), formatos (`jpg`, `png`, `webp`) y tamaño máximo (5 MB).
+
+- **Acceso**: **Protegido (Rol `admin`)**
+- **Respuesta (200 OK)**:
+```json
+{
+  "cloudName": "mi-cloud",
+  "apiKey": "1234567890",
+  "timestamp": 1762661000,
+  "signature": "a1b2c3d4e5f6...",
+  "folder": "chivas-rumberas/chivas",
+  "allowedFormats": ["jpg", "png", "webp"],
+  "maxFileSize": 5242880
+}
+```
+
+---
+
 ### 4. Recorridos (Travels)
 
 #### `GET /travels`
@@ -391,6 +476,133 @@ Crea una nueva reserva de chiva rumbera. Realiza la validación de negocio, cál
 
 ---
 
+#### `GET /bookings`
+Obtiene el listado paginado de reservas para el panel de administración, ordenado por `createdAt desc` con `id desc` de desempate.
+
+- **Acceso**: **Protegido (Rol `admin`)**
+- **Query Params**:
+  - `page` *(opcional, default `1`)*: Entero `>= 1`.
+  - `limit` *(opcional, default `10`, máx `50`)*: Cantidad de registros por página.
+  - `status` *(opcional)*: `pending` | `confirmed` | `cancelled` | `completed`.
+  - `q` *(opcional)*: Búsqueda por código (`CR-XXXXXX`), nombre o correo del cliente.
+- **Respuesta (200 OK)**:
+```json
+{
+  "data": [
+    {
+      "id": "CR-7X8M2P",
+      "chivaId": "la-coqueta-1954",
+      "chivaName": "La Coqueta",
+      "travelId": "trv_alumbrados",
+      "travelName": "Ruta Navideña y Alumbrados",
+      "customerName": "Carolina Montoya",
+      "customerEmail": "carolina.montoya@ejemplo.com",
+      "customerPhone": "3001234567",
+      "guestCount": 45,
+      "eventDate": "2026-11-20",
+      "startTime": "18:00",
+      "endTime": "22:00",
+      "durationHours": 4,
+      "totalPrice": 1120000,
+      "status": "confirmed",
+      "notes": "Celebración de cumpleaños de empresa.",
+      "calendarSyncStatus": "synced",
+      "createdAt": "2026-10-24T18:25:00.000Z"
+    }
+  ],
+  "meta": {
+    "page": 1,
+    "limit": 10,
+    "total": 1,
+    "totalPages": 1
+  }
+}
+```
+- **Errores posibles**: `400 Bad Request` (`ValidationError`), `401 Unauthorized`, `403 Forbidden`.
+
+---
+
+#### `GET /bookings/track`
+Permite al cliente consultar el seguimiento público de su reserva usando su código y correo electrónico como credencial. Cuenta con rate limiting estricto.
+
+- **Acceso**: Público
+- **Query Params**:
+  - `code` *(requerido)*: Código de la reserva (ej: `CR-7X8M2P`).
+  - `email` *(requerido)*: Correo electrónico con el que se realizó la reserva.
+- **Ejemplo**: `GET /bookings/track?code=CR-7X8M2P&email=carolina.montoya@ejemplo.com`
+- **Respuesta (200 OK)**:
+```json
+{
+  "id": "CR-7X8M2P",
+  "code": "CR-7X8M2P",
+  "status": "confirmed",
+  "createdAt": "2026-10-24T18:25:00.000Z",
+  "chivaId": "la-coqueta-1954",
+  "chivaName": "La Coqueta",
+  "travelId": "trv_alumbrados",
+  "travelName": "Ruta Navideña y Alumbrados",
+  "eventDate": "2026-11-20",
+  "startTime": "18:00",
+  "endTime": "22:00",
+  "durationHours": 4,
+  "guestCount": 45,
+  "totalPrice": 1120000
+}
+```
+- **Errores posibles**: `400 Bad Request`, `404 Not Found` (mismo error genérico si el código no existe o el correo no coincide), `429 Too Many Requests`.
+
+---
+
+#### `GET /bookings/calendar`
+Obtiene las reservas confirmadas agrupadas por día y chiva para el calendario mensual del dashboard administrativo (zona horaria `America/Bogota`). Si una reserva termina pasada la medianoche, permanece en su día de inicio e incluye `"endsNextDay": true`.
+
+- **Acceso**: **Protegido (Rol `admin`)**
+- **Query Params**:
+  - `month` *(requerido)*: Mes en formato `YYYY-MM` (ej: `2026-11`).
+- **Respuesta (200 OK)**:
+```json
+{
+  "month": "2026-11",
+  "chivas": [
+    { "id": "la-coqueta-1954", "name": "La Coqueta" },
+    { "id": "la-perla-1959", "name": "La Perla" }
+  ],
+  "days": [
+    {
+      "date": "2026-11-20",
+      "chivasCount": 2,
+      "chivas": [
+        {
+          "chivaId": "la-coqueta-1954",
+          "chivaName": "La Coqueta",
+          "slots": [
+            {
+              "bookingId": "CR-SEED01",
+              "startTime": "18:00",
+              "endTime": "22:00",
+              "durationHours": 4,
+              "customerName": "Carolina Montoya",
+              "travelName": "Ruta Navideña y Alumbrados",
+              "guestCount": 42
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}
+```
+
+---
+
+#### `POST /bookings/:id/calendar-sync`
+Reintenta manualmente la sincronización en Google Calendar de una reserva con estado `confirmed`. Es idempotente: si ya cuenta con `googleEventId`, no duplica el evento.
+
+- **Acceso**: **Protegido (Rol `admin`)**
+- **Respuesta (200 OK)**: Objeto `BookingResponseDto` con `calendarSyncStatus` actualizado (`synced` o `failed`).
+
+---
+
 #### `GET /bookings/:id`
 Obtiene los detalles completos de una reserva específica para la gestión interna.
 
@@ -427,6 +639,49 @@ Valores aceptados según el estado actual:
 
 ---
 
+## ⚙️ Variables de Entorno y Configuraciones Externas
+
+Copia `.env.example` a `.env` y configura las siguientes variables:
+
+| Variable | Descripción |
+| :--- | :--- |
+| `DATABASE_URL` | Cadena de conexión PostgreSQL con pooler (PgBouncer) en Neon. |
+| `DIRECT_URL` | Cadena de conexión directa PostgreSQL para migraciones. |
+| `JWT_SECRET` | Secreto de al menos 32 caracteres para firmar tokens JWT. |
+| `JWT_EXPIRES_IN` | Tiempo de expiración del token (ej: `8h`). |
+| `RESEND_API_KEY` | API Key de Resend para correos transaccionales. |
+| `RESEND_FROM_EMAIL` | Remitente verificado en Resend (o `onboarding@resend.dev` en dev). |
+| `ADMIN_EMAIL` | Correo del administrador que recibe alertas de nuevas reservas. |
+| `FRONTEND_URL` | URL base del frontend para construir el enlace `/seguimiento?code=...` en los correos. |
+| `CORS_ORIGINS` | Orígenes permitidos separados por coma (también soporta `CORS_ORIGIN`). |
+| `CLOUDINARY_CLOUD_NAME` | Cloud Name de tu cuenta gratuita de Cloudinary. |
+| `CLOUDINARY_API_KEY` | API Key de Cloudinary. |
+| `CLOUDINARY_API_SECRET` | API Secret de Cloudinary para firmar subidas desde el backend. |
+| `GOOGLE_SERVICE_ACCOUNT_EMAIL` | Correo `client_email` de la Cuenta de Servicio de Google Cloud. |
+| `GOOGLE_PRIVATE_KEY` | Clave privada `private_key` del JSON de la Cuenta de Servicio (soporta `\n`). |
+| `GOOGLE_CALENDAR_ID` | ID del calendario de Google compartido con la Cuenta de Servicio. |
+
+### ☁️ Cómo configurar Cloudinary (Plan Gratuito)
+1. Crea una cuenta gratuita en [Cloudinary](https://cloudinary.com/).
+2. En el **Dashboard** principal (o en *Settings → API Keys*), copia los valores de **Cloud Name**, **API Key** y **API Secret**.
+3. Configúralos en tus variables de entorno (`CLOUDINARY_CLOUD_NAME`, `CLOUDINARY_API_KEY`, `CLOUDINARY_API_SECRET`).
+4. Para subir imágenes desde el panel admin, el frontend solicita primero `GET /uploads/signature` y luego envía un `POST` con `FormData` a `https://api.cloudinary.com/v1_1/{cloudName}/image/upload` incluyendo `file`, `api_key`, `timestamp`, `signature`, `folder`, `allowed_formats` (`jpg,png,webp`) y `max_file_size` (`5242880`).
+
+### 📅 Cómo crear la Cuenta de Servicio y compartir Google Calendar (Gratis)
+1. Ingresa a [Google Cloud Console](https://console.cloud.google.com/) y crea o selecciona un proyecto.
+2. Ve a **APIs y servicios → Biblioteca**, busca **Google Calendar API** y haz clic en **Habilitar**.
+3. Ve a **IAM y administración → Cuentas de servicio** y haz clic en **Crear cuenta de servicio**.
+4. Asígnale un nombre (ej: `chivas-calendar-sync`), finaliza la creación y entra al detalle de la cuenta creada.
+5. En la pestaña **Claves (Keys)**, selecciona **Agregar clave → Crear clave nueva → JSON**. Se descargará un archivo `.json`.
+6. Del archivo `.json` descargado, copia:
+   - `client_email` ➔ `GOOGLE_SERVICE_ACCOUNT_EMAIL`
+   - `private_key` ➔ `GOOGLE_PRIVATE_KEY` (conservando los `\n` entre comillas).
+7. Abre [Google Calendar](https://calendar.google.com/), entra a **Configuración y uso compartido** del calendario donde quieras registrar los eventos:
+   - En **Compartir con personas o grupos específicos**, agrega el `client_email` de la cuenta de servicio con el permiso **"Hacer cambios en los eventos"**.
+   - En la sección **Integrar el calendario**, copia el **ID del calendario** (ej: `xxx@group.calendar.google.com` o tu correo principal) y colócalo en `GOOGLE_CALENDAR_ID`.
+
+---
+
 ## 🧪 Colección de Pruebas (Bruno)
 
 El proyecto incluye una colección completa de peticiones HTTP en el directorio [`chivas-rumberas-endpoints/`](./chivas-rumberas-endpoints/), lista para abrir con [Bruno](https://www.usebruno.com/):
@@ -435,11 +690,20 @@ El proyecto incluye una colección completa de peticiones HTTP en el directorio 
 2. Selecciona **Open Collection** y abre la carpeta `chivas-rumberas-endpoints`.
 3. Encontrarás peticiones preconfiguradas para:
    - `health.yml` (Health check)
+   - `login.yml` (Inicio de sesión)
    - `allChivas.yml` (Listar chivas)
    - `infoChivaById.yml` (Detalle de chiva)
+   - `createChiva.yml` (Crear chiva — admin)
+   - `updateChiva.yml` (Actualizar chiva — admin)
+   - `deleteChiva.yml` (Retirar chiva — admin)
+   - `uploadSignature.yml` (Firma de subida Cloudinary — admin)
    - `allTravels.yml` (Listar recorridos)
    - `availabilityByChivaId.yml` (Disponibilidad)
    - `createBooking.yml` (Creación de reserva)
+   - `allBookings.yml` (Listado paginado de reservas — admin)
+   - `trackBooking.yml` (Seguimiento público por código y correo)
+   - `bookingsCalendar.yml` (Calendario mensual — admin)
+   - `calendarSyncBooking.yml` (Reintento manual Google Calendar — admin)
    - `infoBooking.yml` (Consulta con token)
    - `updateStatus.yml` (Actualización de estado con token)
 

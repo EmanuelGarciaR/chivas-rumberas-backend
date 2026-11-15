@@ -1,22 +1,28 @@
 import express from "express";
 import cors from "cors";
+import helmet from "helmet";
 import { errorHandler } from "./middlewares/error.middleware";
 import { createAuthRouter } from "./routes/auth.routes";
 import { createChivasRouter } from "./routes/chivas.routes";
 import { createTravelsRouter } from "./routes/travels.routes";
 import { createBookingsRouter } from "./routes/bookings.routes";
+import { createUploadsRouter } from "./routes/uploads.routes";
 import {
   authController,
   chivasController,
   travelsController,
   bookingsController,
+  uploadsController,
   jwtService,
 } from "./container";
 
 const app = express();
 
 // ── Middlewares globales ───────────────────────────────────────────────────
-const configuredOrigins = process.env.CORS_ORIGIN
+app.use(helmet());
+
+const rawCorsOrigins = process.env.CORS_ORIGINS ?? process.env.CORS_ORIGIN;
+const configuredOrigins = rawCorsOrigins
   ?.split(",")
   .map((origin) => origin.trim().replace(/\/+$/, ""))
   .filter(Boolean);
@@ -39,6 +45,7 @@ app.use("/auth", createAuthRouter(authController));
 app.use("/chivas", createChivasRouter(chivasController, jwtService));
 app.use("/travels", createTravelsRouter(travelsController));
 app.use("/bookings", createBookingsRouter(bookingsController, jwtService));
+app.use("/uploads", createUploadsRouter(uploadsController, jwtService));
 
 // ── Manejo global de errores (siempre al final) ───────────────────────────
 app.use(errorHandler);

@@ -1,4 +1,4 @@
-import { BookingStatus } from "../../domain/models/Booking";
+import { BookingStatus, CalendarSyncStatus } from "../../domain/models/Booking";
 
 /**
  * DTO de entrada: datos del formulario para crear una reserva.
@@ -36,5 +36,69 @@ export interface BookingResponseDto {
   totalPrice: number;
   status: BookingStatus;
   notes?: string;
+  calendarSyncStatus?: CalendarSyncStatus;
   createdAt: string;      // ISO string
+}
+
+export interface GetBookingsQueryDto {
+  page?: number;
+  limit?: number;
+  status?: BookingStatus;
+  q?: string;
+}
+
+export interface PaginatedBookingsResponseDto {
+  data: BookingResponseDto[];
+  meta: {
+    page: number;
+    limit: number;
+    total: number;
+    totalPages: number;
+  };
+}
+
+export interface TrackBookingResponseDto {
+  id: string;
+  code: string;
+  status: BookingStatus;
+  createdAt: string;
+  chivaId: string;
+  chivaName: string;
+  travelId: string;
+  travelName: string;
+  eventDate: string;
+  startTime: string;
+  endTime: string;
+  durationHours: number;
+  guestCount: number;
+  totalPrice: number;
+}
+
+export interface CalendarSlotDto {
+  bookingId: string;
+  startTime: string;
+  endTime: string;
+  durationHours: number;
+  customerName: string;
+  travelName: string;
+  guestCount: number;
+  endsNextDay?: boolean;
+}
+
+export interface CalendarDayChivaDto {
+  chivaId: string;
+  chivaName: string;
+  slots: CalendarSlotDto[];
+}
+
+export interface CalendarDayDto {
+  date: string;
+  chivasCount: number;
+  chivas: CalendarDayChivaDto[];
+}
+
+export interface BookingsCalendarResponseDto {
+  month: string;
+  chivas: Array<{ id: string; name: string }>;
+  days: CalendarDayDto[];
 }

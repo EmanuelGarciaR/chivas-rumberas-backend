@@ -1,9 +1,21 @@
-import { Booking, BookingStatus } from "../models/Booking";
+import { Booking, BookingStatus, CalendarSyncStatus } from "../models/Booking";
 
 export interface BookingFilters {
   chivaId?: string;
   date?: Date;
   status?: BookingStatus;
+}
+
+export interface PaginatedBookingsQuery {
+  page: number;
+  limit: number;
+  status?: BookingStatus;
+  q?: string;
+}
+
+export interface PaginatedBookingsResult {
+  data: Booking[];
+  total: number;
 }
 
 
@@ -13,6 +25,10 @@ export interface IBookingRepository {
   findBookingById(id: string): Promise<Booking | null>;
 
   findBookingAll(filters?: BookingFilters): Promise<Booking[]>;
+
+  findBookingPaginated(query: PaginatedBookingsQuery): Promise<PaginatedBookingsResult>;
+
+  findConfirmedByDateRange(startDate: Date, endDate: Date): Promise<Booking[]>;
 
   findOccupiedSlotsByChivaAndDate(
     chivaId: string,
@@ -27,7 +43,14 @@ export interface IBookingRepository {
     excludeBookingId?: string
   ): Promise<boolean>;
 
+  hasFutureActiveBookingsByChiva(chivaId: string, fromDate?: Date): Promise<boolean>;
+
   saveBooking(booking: Booking): Promise<Booking>;
 
   updateBookingStatus(id: string, status: BookingStatus): Promise<Booking>;
+
+  updateBookingCalendarSync(
+    id: string,
+    data: { googleEventId?: string | null; calendarSyncStatus: CalendarSyncStatus }
+  ): Promise<Booking>;
 }

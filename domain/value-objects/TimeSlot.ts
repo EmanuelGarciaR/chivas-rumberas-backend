@@ -1,3 +1,5 @@
+import { ValidationError } from "../errors/DomainErrors";
+
 /**
  * Value Object: TimeSlot
  * Representa un bloque de tiempo de una reserva.
@@ -14,10 +16,10 @@ export class TimeSlot {
 
   static create(startTime: string, durationHours: number): TimeSlot {
     if (!TimeSlot.isValidTime(startTime)) {
-      throw new Error(`Hora inválida: "${startTime}". Use formato HH:mm (24h).`);
+      throw new ValidationError(`Hora inválida: "${startTime}". Use formato HH:mm (24h).`);
     }
     if (durationHours < 1 || durationHours > 12) {
-      throw new Error("La duración debe estar entre 1 y 12 horas.");
+      throw new ValidationError("La duración debe estar entre 1 y 12 horas.");
     }
     return new TimeSlot(startTime, durationHours);
   }

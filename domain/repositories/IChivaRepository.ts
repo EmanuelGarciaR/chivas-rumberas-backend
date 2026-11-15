@@ -1,5 +1,15 @@
 import { Chiva, ChivaStatus } from "../models/Chiva";
 
+export interface UpdateChivaFields {
+  name?: string;
+  description?: string;
+  capacity?: number;
+  pricePerHour?: number;
+  status?: ChivaStatus;
+  features?: string[];
+  imageUrls?: string[];
+}
+
 /**
  * Contrato del repositorio de Chivas.
  * La capa de infraestructura debe implementar esta interfaz.
@@ -14,8 +24,5 @@ export interface IChivaRepository {
 
   updateChivaStatus(id: string, status: ChivaStatus): Promise<Chiva>;
 
-  updateChiva(
-    id: string,
-    updates: { pricePerHour?: number; status?: ChivaStatus }
-  ): Promise<Chiva>;
+  updateChiva(id: string, updates: UpdateChivaFields): Promise<Chiva>;
 }

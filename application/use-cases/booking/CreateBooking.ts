@@ -1,6 +1,7 @@
 import { IBookingRepository } from "../../../domain/repositories/IBookingRepository";
 import { IChivaRepository } from "../../../domain/repositories/IChivaRepository";
 import { ITravelRepository } from "../../../domain/repositories/ITravelRepository";
+import { ICustomerRepository } from "../../../domain/repositories/ICustomerRepository";
 import { INotificationService } from "../../../application/ports/INotificationService";
 import { CreateBookingDto, BookingResponseDto } from "../../dtos/BookingDto";
 import { EventDate } from "../../../domain/value-objects/EventDate";
@@ -18,16 +19,18 @@ import { generateBookingCode } from "../../../domain/utils/idGenerator";
  * 2. Validar que el recorrido existe.
  * 3. Validar fecha, hora y cantidad de invitados con Value Objects.
  * 4. Verificar que no haya conflicto de horario.
- * 5. Calcular precio total.
- * 6. Persistir la reserva.
- * 7. Enviar notificaciones.
+ * 5. Buscar o crear Customer por email en minúsculas y actualizar nombre/teléfono.
+ * 6. Calcular precio total.
+ * 7. Persistir la reserva.
+ * 8. Enviar notificaciones.
  */
 export class CreateBookingUseCase {
   constructor(
     private readonly bookingRepository: IBookingRepository,
     private readonly chivaRepository: IChivaRepository,
     private readonly travelRepository: ITravelRepository,
-    private readonly notificationService: INotificationService
+    private readonly notificationService: INotificationService,
+    private readonly customerRepository?: ICustomerRepository
   ) {}
 
   async execute(dto: CreateBookingDto): Promise<BookingResponseDto> {
@@ -41,8 +44,8 @@ export class CreateBookingUseCase {
     if (!travel) throw new TravelNotFoundError(dto.travelId);
 
     // Validar con Value Objects (lanzan DomainError si fallan)
-    const eventDate = EventDate.create(dto.eventDate);
     const timeSlot = TimeSlot.create(dto.startTime, dto.durationHours);
+    const eventDate = EventDate.create(dto.eventDate, timeSlot.startTime);
     GuestCount.create(dto.guestCount, chiva.capacity);
 
     // Verificar conflicto de horario
@@ -60,6 +63,17 @@ export class CreateBookingUseCase {
       );
     }
 
+    const normalizedEmail = dto.customerEmail.trim().toLowerCase();
+    let customerId: string | undefined;
+    if (this.customerRepository) {
+      const customer = await this.customerRepository.upsertByEmail({
+        name: dto.customerName,
+        email: normalizedEmail,
+        phone: dto.customerPhone,
+      });
+      customerId = customer.id;
+    }
+
     // Calcular precio
     const totalPrice = chiva.pricePerHour * dto.durationHours;
 
@@ -67,9 +81,10 @@ export class CreateBookingUseCase {
     const newBooking: Booking = {
       id: generateBookingCode(),
       chivaId: dto.chivaId,
-      customerName: dto.customerName,
-      customerEmail: dto.customerEmail,
-      customerPhone: dto.customerPhone,
+      customerId,
+      customerName: dto.customerName.trim(),
+      customerEmail: normalizedEmail,
+      customerPhone: dto.customerPhone.trim(),
       guestCount: dto.guestCount,
       travel: travel.id,
       eventDate: eventDate.value,
@@ -115,6 +130,7 @@ export class CreateBookingUseCase {
       totalPrice: booking.totalPrice,
       status: booking.status,
       notes: booking.notes,
+      calendarSyncStatus: booking.calendarSyncStatus ?? "pending",
       createdAt: booking.createdAt.toISOString(),
     };
   }

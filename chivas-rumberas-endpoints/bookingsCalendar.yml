@@ -1,0 +1,20 @@
+info:
+  name: bookingsCalendar
+  type: http
+
+http:
+  method: GET
+  url: http://localhost:3000/bookings/calendar?month=2026-11
+  params:
+    - name: month
+      value: 2026-11
+      type: query
+  auth:
+    type: bearer
+    token: TOKEN
+
+settings:
+  encodeUrl: true
+  timeout: 0
+  followRedirects: true
+  maxRedirects: 5

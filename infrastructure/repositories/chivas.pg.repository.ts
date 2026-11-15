@@ -1,4 +1,4 @@
-import { IChivaRepository } from "../../domain/repositories/IChivaRepository";
+import { IChivaRepository, UpdateChivaFields } from "../../domain/repositories/IChivaRepository";
 import { Chiva, ChivaStatus } from "../../domain/models/Chiva";
 import prisma from "../database/prismaClient";
 
@@ -43,15 +43,17 @@ export class ChivaRepository implements IChivaRepository {
     return this.toDomain(row);
   }
 
-  async updateChiva(
-    id: string,
-    updates: { pricePerHour?: number; status?: ChivaStatus }
-  ): Promise<Chiva> {
+  async updateChiva(id: string, updates: UpdateChivaFields): Promise<Chiva> {
     const row = await prisma.chiva.update({
       where: { id },
       data: {
+        ...(updates.name !== undefined && { name: updates.name }),
+        ...(updates.description !== undefined && { description: updates.description }),
+        ...(updates.capacity !== undefined && { capacity: updates.capacity }),
         ...(updates.pricePerHour !== undefined && { pricePerHour: updates.pricePerHour }),
         ...(updates.status !== undefined && { status: updates.status }),
+        ...(updates.features !== undefined && { features: updates.features }),
+        ...(updates.imageUrls !== undefined && { imageUrls: updates.imageUrls }),
       },
     });
     return this.toDomain(row);

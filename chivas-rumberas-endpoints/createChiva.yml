@@ -1,0 +1,33 @@
+info:
+  name: createChiva
+  type: http
+
+http:
+  method: POST
+  url: http://localhost:3000/chivas
+  headers:
+    - name: Content-Type
+      value: application/json
+  body:
+    type: json
+    data: |-
+      {
+        "name": "La Sabrosura",
+        "description": "Chiva rumbera con pista iluminada y sonido profesional.",
+        "capacity": 45,
+        "pricePerHour": 290000,
+        "features": ["Sonido 4000W", "Luces LED", "DJ en vivo"],
+        "status": "available",
+        "imageUrls": [
+          "https://images.unsplash.com/photo-1544620347-c4fd4a3d5957?auto=format&fit=crop&w=1000&q=80"
+        ]
+      }
+  auth:
+    type: bearer
+    token: TOKEN
+
+settings:
+  encodeUrl: true
+  timeout: 0
+  followRedirects: true
+  maxRedirects: 5

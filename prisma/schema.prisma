@@ -41,25 +41,41 @@ model Travel {
   @@map("travels")
 }
 
-model Booking {
-  id            String        @id
-  chivaId       String
-  travelId      String
-  customerName  String
-  customerEmail String
-  customerPhone String
-  guestCount    Int
-  eventDate     DateTime
-  startTime     String        // "HH:mm"
-  durationHours Float
-  totalPrice    Float
-  status        BookingStatus @default(pending)
-  notes         String?
-  createdAt     DateTime      @default(now())
-  updatedAt     DateTime      @updatedAt
+model Customer {
+  id        String   @id @default(uuid())
+  name      String
+  email     String   @unique
+  phone     String
+  createdAt DateTime @default(now())
 
-  chiva  Chiva  @relation(fields: [chivaId], references: [id])
-  travel Travel @relation(fields: [travelId], references: [id])
+  bookings Booking[]
+
+  @@map("customers")
+}
+
+model Booking {
+  id                 String             @id
+  chivaId            String
+  travelId           String
+  customerId         String?
+  customerName       String
+  customerEmail      String
+  customerPhone      String
+  guestCount         Int
+  eventDate          DateTime
+  startTime          String             // "HH:mm"
+  durationHours      Float
+  totalPrice         Float
+  status             BookingStatus      @default(pending)
+  notes              String?
+  googleEventId      String?
+  calendarSyncStatus CalendarSyncStatus @default(pending)
+  createdAt          DateTime           @default(now())
+  updatedAt          DateTime           @updatedAt
+
+  chiva    Chiva     @relation(fields: [chivaId], references: [id])
+  travel   Travel    @relation(fields: [travelId], references: [id])
+  customer Customer? @relation(fields: [customerId], references: [id])
 
   @@map("bookings")
 }
@@ -85,6 +101,12 @@ enum BookingStatus {
   confirmed
   cancelled
   completed
+}
+
+enum CalendarSyncStatus {
+  pending
+  synced
+  failed
 }
 
 enum UserRole {

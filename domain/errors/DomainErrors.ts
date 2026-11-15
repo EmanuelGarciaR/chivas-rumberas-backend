@@ -41,8 +41,12 @@ export class BookingConflictError extends DomainError {
 }
 
 export class BookingNotFoundError extends DomainError {
-  constructor(bookingId: string) {
-    super(`La reserva con ID "${bookingId}" no fue encontrada.`);
+  constructor(bookingId?: string) {
+    super(
+      bookingId
+        ? `La reserva con ID "${bookingId}" no fue encontrada.`
+        : "No se encontró ninguna reserva con los datos proporcionados."
+    );
     this.name = "BookingNotFoundError";
   }
 }
@@ -58,5 +62,14 @@ export class TravelNotFoundError extends DomainError {
   constructor(travelId: string) {
     super(`El recorrido con ID "${travelId}" no fue encontrado.`);
     this.name = "TravelNotFoundError";
+  }
+}
+
+export class ChivaHasActiveBookingsError extends DomainError {
+  constructor(chivaId: string) {
+    super(
+      `No se puede retirar la chiva "${chivaId}" porque tiene reservas futuras pendientes o confirmadas.`
+    );
+    this.name = "ChivaHasActiveBookingsError";
   }
 }
