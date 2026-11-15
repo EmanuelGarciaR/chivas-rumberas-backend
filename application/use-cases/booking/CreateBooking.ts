@@ -44,8 +44,8 @@ export class CreateBookingUseCase {
     if (!travel) throw new TravelNotFoundError(dto.travelId);
 
     // Validar con Value Objects (lanzan DomainError si fallan)
-    const eventDate = EventDate.create(dto.eventDate);
     const timeSlot = TimeSlot.create(dto.startTime, dto.durationHours);
+    const eventDate = EventDate.create(dto.eventDate, timeSlot.startTime);
     GuestCount.create(dto.guestCount, chiva.capacity);
 
     // Verificar conflicto de horario
