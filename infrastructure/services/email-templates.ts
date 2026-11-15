@@ -5,10 +5,13 @@ import { BookingResponseDto } from "../../application/dtos/BookingDto";
  * Mantener separadas de la lógica de envío para facilitar cambios de diseño.
  */
 
+const DEFAULT_FRONTEND_URL = "https://chivas-rumberas-la80-ten.vercel.app";
+
 export const getTrackingUrl = (bookingCode: string): string => {
-  const baseUrl = (process.env.FRONTEND_URL ?? "http://localhost:3000")
-    .trim()
-    .replace(/\/+$/, "");
+  const envUrl = process.env.FRONTEND_URL?.trim().replace(/^["']+|["']+$/g, "");
+  const baseUrl = (
+    envUrl && !envUrl.includes("localhost") ? envUrl : DEFAULT_FRONTEND_URL
+  ).replace(/\/+$/, "");
   return `${baseUrl}/seguimiento?code=${encodeURIComponent(bookingCode)}`;
 };
 

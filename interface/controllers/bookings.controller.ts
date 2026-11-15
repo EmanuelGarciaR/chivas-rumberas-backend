@@ -162,43 +162,59 @@ export class BookingsController {
     }
   };
 
-  /** PATCH /bookings/:id/status — Protegido: confirmar, cancelar o completar (con precio opcional) */
+  /** PATCH /bookings/:id/status — Protegido: confirmar, cancelar, completar o actualizar precio */
   updateStatus = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
     try {
       const id = req.params.id as string;
-      const { status, totalPrice } = req.body ?? {};
-
-      if (!status) {
-        throw new ValidationError("El campo status es requerido.");
-      }
+      const body = req.body ?? {};
+      const status = body.status;
+      const rawPrice = body.totalPrice ?? body.price;
 
       let parsedTotalPrice: number | undefined;
-      if (totalPrice !== undefined && totalPrice !== null) {
-        const numericPrice = typeof totalPrice === "string" ? Number(totalPrice) : totalPrice;
-        if (typeof numericPrice !== "number" || !Number.isFinite(numericPrice) || numericPrice <= 0) {
+      if (rawPrice !== undefined && rawPrice !== null && rawPrice !== "") {
+        let numericPrice: number;
+        if (typeof rawPrice === "number") {
+          numericPrice = rawPrice;
+        } else if (typeof rawPrice === "string") {
+          const trimmed = rawPrice.trim();
+          if (/^\$?\s*\d{1,3}(\.\d{3})+$/.test(trimmed)) {
+            numericPrice = Number(trimmed.replace(/[^\d]/g, ""));
+          } else {
+            numericPrice = Number(trimmed.replace(/[$,\s]/g, ""));
+          }
+        } else {
+          numericPrice = NaN;
+        }
+
+        if (!Number.isFinite(numericPrice) || numericPrice <= 0) {
           throw new ValidationError("El campo totalPrice debe ser un número mayor a 0.");
         }
         parsedTotalPrice = numericPrice;
       }
 
-      const allowedStatuses: BookingStatus[] =
-        parsedTotalPrice !== undefined
-          ? [...ACCEPTED_BOOKING_STATUSES, "pending"]
-          : ACCEPTED_BOOKING_STATUSES;
-
-      if (
-        typeof status !== "string" ||
-        !allowedStatuses.includes(status as BookingStatus)
-      ) {
-        throw new ValidationError(
-          "El campo status debe ser confirmed, cancelled o completed."
-        );
+      if (!status && parsedTotalPrice === undefined) {
+        throw new ValidationError("El campo status es requerido.");
       }
 
-      // Si no existe o la transición no es válida, el use case lanza los errores de dominio
+      if (status !== undefined && status !== null && status !== "") {
+        const allowedStatuses: BookingStatus[] =
+          parsedTotalPrice !== undefined
+            ? [...ACCEPTED_BOOKING_STATUSES, "pending"]
+            : ACCEPTED_BOOKING_STATUSES;
+
+        if (
+          typeof status !== "string" ||
+          !allowedStatuses.includes(status as BookingStatus)
+        ) {
+          throw new ValidationError(
+            "El campo status debe ser confirmed, cancelled o completed."
+          );
+        }
+      }
+
       const booking = await this.updateBookingStatusUseCase.execute(
         id,
-        status as BookingStatus,
+        status ? (status as BookingStatus) : undefined,
         parsedTotalPrice
       );
       res.status(200).json(booking);

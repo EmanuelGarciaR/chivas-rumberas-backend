@@ -927,6 +927,12 @@ describe("Precio sugerido editable por el admin y visibilidad en correos", () =>
     assert.equal(pendingHtml.includes("950.000"), false);
     assert.equal(pendingHtml.includes("950,000"), false);
     assert.equal(pendingHtml.includes("Precio en revisión"), true);
+    assert.equal(
+      pendingHtml.includes(
+        "https://chivas-rumberas-la80-ten.vercel.app/seguimiento?code=CR-8P2Q9M"
+      ),
+      true
+    );
 
     const confirmedHtml = bookingStatusUpdateTemplate(
       { ...baseDto, status: "confirmed" },
@@ -935,6 +941,12 @@ describe("Precio sugerido editable por el admin y visibilidad en correos", () =>
     assert.equal(confirmedHtml.includes("Total confirmado:"), true);
     assert.equal(
       confirmedHtml.includes("950.000") || confirmedHtml.includes("950,000"),
+      true
+    );
+    assert.equal(
+      confirmedHtml.includes(
+        "https://chivas-rumberas-la80-ten.vercel.app/seguimiento?code=CR-8P2Q9M"
+      ),
       true
     );
   });

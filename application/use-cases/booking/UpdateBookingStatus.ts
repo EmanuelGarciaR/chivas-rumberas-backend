@@ -38,20 +38,19 @@ export class UpdateBookingStatusUseCase {
 
   async execute(
     bookingId: string,
-    newStatus: BookingStatus,
+    newStatus?: BookingStatus,
     customTotalPrice?: number
   ): Promise<BookingResponseDto> {
     const booking = await this.bookingRepository.findBookingById(bookingId);
     if (!booking) throw new BookingNotFoundError(bookingId);
 
-    const isPriceOnlyUpdateOnPending =
-      booking.status === "pending" &&
-      newStatus === "pending" &&
-      customTotalPrice !== undefined;
+    const targetStatus: BookingStatus = newStatus ?? booking.status;
+    const isSameStatusPriceUpdate =
+      targetStatus === booking.status && customTotalPrice !== undefined;
 
     const allowed = this.VALID_TRANSITIONS[booking.status];
-    if (!isPriceOnlyUpdateOnPending && !allowed.includes(newStatus)) {
-      throw new InvalidBookingStatusTransitionError(booking.status, newStatus);
+    if (!isSameStatusPriceUpdate && !allowed.includes(targetStatus)) {
+      throw new InvalidBookingStatusTransitionError(booking.status, targetStatus);
     }
 
     if (customTotalPrice !== undefined) {
@@ -66,7 +65,7 @@ export class UpdateBookingStatusUseCase {
 
     let updated = await this.bookingRepository.updateBookingStatus(
       bookingId,
-      newStatus,
+      targetStatus,
       customTotalPrice !== undefined ? Math.round(customTotalPrice) : undefined
     );
 
@@ -87,7 +86,7 @@ export class UpdateBookingStatusUseCase {
     const eventDateStr = updated.eventDate.toISOString().split("T")[0];
 
     // Sincronización con Google Calendar (un fallo NO bloquea el cambio de estado)
-    if (newStatus === "confirmed") {
+    if (!isSameStatusPriceUpdate && targetStatus === "confirmed") {
       const existingEventId = updated.googleEventId ?? booking.googleEventId;
       if (existingEventId) {
         // Idempotente: si ya tiene googleEventId, no creamos otro
@@ -125,7 +124,7 @@ export class UpdateBookingStatusUseCase {
           });
         }
       }
-    } else if (newStatus === "cancelled") {
+    } else if (!isSameStatusPriceUpdate && targetStatus === "cancelled") {
       const existingEventId = updated.googleEventId ?? booking.googleEventId;
       if (existingEventId && this.calendarService) {
         try {
@@ -169,7 +168,7 @@ export class UpdateBookingStatusUseCase {
       createdAt: updated.createdAt.toISOString(),
     };
 
-    if (!isPriceOnlyUpdateOnPending) {
+    if (!isSameStatusPriceUpdate) {
       await this.notificationService.sendBookingStatusUpdate(response, booking.status);
     }
     return response;
