@@ -162,19 +162,33 @@ export class BookingsController {
     }
   };
 
-  /** PATCH /bookings/:id/status — Protegido: confirmar, cancelar o completar */
+  /** PATCH /bookings/:id/status — Protegido: confirmar, cancelar o completar (con precio opcional) */
   updateStatus = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
     try {
       const id = req.params.id as string;
-      const { status } = req.body ?? {};
+      const { status, totalPrice } = req.body ?? {};
 
       if (!status) {
         throw new ValidationError("El campo status es requerido.");
       }
 
+      let parsedTotalPrice: number | undefined;
+      if (totalPrice !== undefined && totalPrice !== null) {
+        const numericPrice = typeof totalPrice === "string" ? Number(totalPrice) : totalPrice;
+        if (typeof numericPrice !== "number" || !Number.isFinite(numericPrice) || numericPrice <= 0) {
+          throw new ValidationError("El campo totalPrice debe ser un número mayor a 0.");
+        }
+        parsedTotalPrice = numericPrice;
+      }
+
+      const allowedStatuses: BookingStatus[] =
+        parsedTotalPrice !== undefined
+          ? [...ACCEPTED_BOOKING_STATUSES, "pending"]
+          : ACCEPTED_BOOKING_STATUSES;
+
       if (
         typeof status !== "string" ||
-        !ACCEPTED_BOOKING_STATUSES.includes(status as BookingStatus)
+        !allowedStatuses.includes(status as BookingStatus)
       ) {
         throw new ValidationError(
           "El campo status debe ser confirmed, cancelled o completed."
@@ -184,7 +198,8 @@ export class BookingsController {
       // Si no existe o la transición no es válida, el use case lanza los errores de dominio
       const booking = await this.updateBookingStatusUseCase.execute(
         id,
-        status as BookingStatus
+        status as BookingStatus,
+        parsedTotalPrice
       );
       res.status(200).json(booking);
     } catch (err) {

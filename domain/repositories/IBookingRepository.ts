@@ -47,7 +47,7 @@ export interface IBookingRepository {
 
   saveBooking(booking: Booking): Promise<Booking>;
 
-  updateBookingStatus(id: string, status: BookingStatus): Promise<Booking>;
+  updateBookingStatus(id: string, status: BookingStatus, totalPrice?: number): Promise<Booking>;
 
   updateBookingCalendarSync(
     id: string,

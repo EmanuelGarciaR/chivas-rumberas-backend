@@ -4,7 +4,11 @@ import { ITravelRepository } from "../../../domain/repositories/ITravelRepositor
 import { INotificationService } from "../../ports/INotificationService";
 import { CalendarService } from "../../ports/CalendarService";
 import { BookingResponseDto } from "../../dtos/BookingDto";
-import { BookingNotFoundError, InvalidBookingStatusTransitionError } from "../../../domain/errors/DomainErrors";
+import {
+  BookingNotFoundError,
+  InvalidBookingStatusTransitionError,
+  ValidationError,
+} from "../../../domain/errors/DomainErrors";
 import { BookingStatus } from "../../../domain/models/Booking";
 import { TimeSlot } from "../../../domain/value-objects/TimeSlot";
 
@@ -32,16 +36,39 @@ export class UpdateBookingStatusUseCase {
     private readonly travelRepository?: ITravelRepository
   ) {}
 
-  async execute(bookingId: string, newStatus: BookingStatus): Promise<BookingResponseDto> {
+  async execute(
+    bookingId: string,
+    newStatus: BookingStatus,
+    customTotalPrice?: number
+  ): Promise<BookingResponseDto> {
     const booking = await this.bookingRepository.findBookingById(bookingId);
     if (!booking) throw new BookingNotFoundError(bookingId);
 
+    const isPriceOnlyUpdateOnPending =
+      booking.status === "pending" &&
+      newStatus === "pending" &&
+      customTotalPrice !== undefined;
+
     const allowed = this.VALID_TRANSITIONS[booking.status];
-    if (!allowed.includes(newStatus)) {
+    if (!isPriceOnlyUpdateOnPending && !allowed.includes(newStatus)) {
       throw new InvalidBookingStatusTransitionError(booking.status, newStatus);
     }
 
-    let updated = await this.bookingRepository.updateBookingStatus(bookingId, newStatus);
+    if (customTotalPrice !== undefined) {
+      if (
+        typeof customTotalPrice !== "number" ||
+        !Number.isFinite(customTotalPrice) ||
+        customTotalPrice <= 0
+      ) {
+        throw new ValidationError("El precio total debe ser un número mayor a 0.");
+      }
+    }
+
+    let updated = await this.bookingRepository.updateBookingStatus(
+      bookingId,
+      newStatus,
+      customTotalPrice !== undefined ? Math.round(customTotalPrice) : undefined
+    );
 
     let chivaName = updated.chivaName ?? booking.chivaName;
     let travelName = updated.travelName ?? booking.travelName;
@@ -142,7 +169,9 @@ export class UpdateBookingStatusUseCase {
       createdAt: updated.createdAt.toISOString(),
     };
 
-    await this.notificationService.sendBookingStatusUpdate(response, booking.status);
+    if (!isPriceOnlyUpdateOnPending) {
+      await this.notificationService.sendBookingStatusUpdate(response, booking.status);
+    }
     return response;
   }
 }

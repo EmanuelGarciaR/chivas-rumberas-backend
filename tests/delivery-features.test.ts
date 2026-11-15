@@ -33,6 +33,10 @@ import type { ITravelRepository } from "../domain/repositories/ITravelRepository
 import type { ICustomerRepository } from "../domain/repositories/ICustomerRepository";
 import type { INotificationService } from "../application/ports/INotificationService";
 import type { CalendarEventInput, CalendarService } from "../application/ports/CalendarService";
+import {
+  bookingConfirmationTemplate,
+  bookingStatusUpdateTemplate,
+} from "../infrastructure/services/email-templates";
 
 const jwtService: IJwtService = {
   sign: (payload) => `${payload.role}-token`,
@@ -852,5 +856,86 @@ describe("hasBookingDateTimePassed — Transición automática a completed por f
     assert.equal(hasBookingDateTimePassed(eventDate, startTime, beforeEvent), false);
     assert.equal(hasBookingDateTimePassed(eventDate, startTime, exactEvent), true);
     assert.equal(hasBookingDateTimePassed(eventDate, startTime, afterEvent), true);
+  });
+});
+
+// ── 9. Negociación de precio por el admin y correos de reserva ────────────
+describe("Precio sugerido editable por el admin y visibilidad en correos", () => {
+  it("permite al admin modificar el precio sugerido al confirmar la reserva", async () => {
+    let current = sampleBooking({
+      status: "pending",
+      totalPrice: 1120000, // precio sugerido inicial (280.000 * 4h)
+    });
+    let notifiedBookingTotal = 0;
+
+    const bookingRepo: Partial<IBookingRepository> = {
+      findBookingById: async () => current,
+      updateBookingStatus: async (_id, status, totalPrice) => {
+        current = {
+          ...current,
+          status,
+          ...(totalPrice !== undefined && { totalPrice }),
+        };
+        return current;
+      },
+      updateBookingCalendarSync: async (_id, data) => {
+        current = { ...current, ...data };
+        return current;
+      },
+    };
+
+    const notificationService: INotificationService = {
+      sendBookingConfirmation: async () => {},
+      sendNewBookingAlert: async () => {},
+      sendBookingStatusUpdate: async (b) => {
+        notifiedBookingTotal = b.totalPrice;
+      },
+    };
+
+    const useCase = new UpdateBookingStatusUseCase(
+      bookingRepo as IBookingRepository,
+      notificationService
+    );
+
+    const updated = await useCase.execute(current.id, "confirmed", 950000);
+    assert.equal(updated.status, "confirmed");
+    assert.equal(updated.totalPrice, 950000);
+    assert.equal(notifiedBookingTotal, 950000);
+  });
+
+  it("oculta el costo en el correo de reserva pendiente y lo muestra en el correo de confirmada", () => {
+    const baseDto = {
+      id: "CR-8P2Q9M",
+      chivaId: "la-coqueta-1954",
+      chivaName: "La Coqueta",
+      travelId: "trv_alumbrados",
+      travelName: "Ruta Navideña y Alumbrados",
+      customerName: "Carolina Montoya",
+      customerEmail: "carolina@example.com",
+      customerPhone: "3001112233",
+      guestCount: 30,
+      eventDate: "2026-11-20",
+      startTime: "18:00",
+      endTime: "22:00",
+      durationHours: 4,
+      totalPrice: 950000,
+      status: "pending" as const,
+      createdAt: new Date().toISOString(),
+    };
+
+    const pendingHtml = bookingConfirmationTemplate(baseDto);
+    assert.equal(pendingHtml.includes("950.000"), false);
+    assert.equal(pendingHtml.includes("950,000"), false);
+    assert.equal(pendingHtml.includes("Precio en revisión"), true);
+
+    const confirmedHtml = bookingStatusUpdateTemplate(
+      { ...baseDto, status: "confirmed" },
+      "pending"
+    );
+    assert.equal(confirmedHtml.includes("Total confirmado:"), true);
+    assert.equal(
+      confirmedHtml.includes("950.000") || confirmedHtml.includes("950,000"),
+      true
+    );
   });
 });

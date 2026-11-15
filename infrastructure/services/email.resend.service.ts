@@ -63,7 +63,7 @@ export class EmailResendService implements IEmailService {
             <li><strong>Recorrido:</strong> ${booking.travelName}</li>
             <li><strong>Fecha:</strong> ${booking.eventDate} ${booking.startTime}–${booking.endTime}</li>
             <li><strong>Invitados:</strong> ${booking.guestCount}</li>
-            <li><strong>Total:</strong> $${booking.totalPrice.toLocaleString("es-CO")} COP</li>
+            <li><strong>Precio sugerido:</strong> $${booking.totalPrice.toLocaleString("es-CO")} COP</li>
             ${booking.notes ? `<li><strong>Notas:</strong> ${booking.notes}</li>` : ""}
           </ul>
         `,

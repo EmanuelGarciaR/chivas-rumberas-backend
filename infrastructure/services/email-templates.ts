@@ -75,7 +75,7 @@ export const bookingConfirmationTemplate = (booking: BookingResponseDto): string
       </div>
 
       <div class="total">
-        Total: $${booking.totalPrice.toLocaleString("es-CO")} COP
+        Precio en revisión por el administrador
       </div>
 
       <p style="margin-top: 20px;">
@@ -84,7 +84,7 @@ export const bookingConfirmationTemplate = (booking: BookingResponseDto): string
       </p>
 
       <p style="margin-top: 24px; color: #666666; font-size: 14px;">
-        Nos pondremos en contacto contigo pronto para confirmar tu reserva y coordinar el pago.
+        Nos pondremos en contacto contigo pronto para confirmar el valor final de tu reserva y coordinar el pago.
         Si tienes alguna pregunta, responde a este correo.
       </p>
     </div>
@@ -143,7 +143,10 @@ export const bookingStatusUpdateTemplate = ( booking: BookingResponseDto, previo
          ha cambiado de <em>${previousStatus}</em> a <strong>${booking.status}</strong>.</p>
       <p>Fecha: <strong>${booking.eventDate}</strong> | Horario: <strong>${booking.startTime} – ${booking.endTime}</strong></p>
       ${booking.status === "confirmed"
-        ? "<p>🎉 ¡Tu chiva está confirmada! Estamos listos para hacer de tu evento algo inolvidable.</p>"
+        ? `<div style="background-color: #FFF8E7; padding: 15px; border-radius: 6px; margin: 16px 0; text-align: right; font-size: 18px; font-weight: bold; color: #D4A017;">
+             Total confirmado: $${booking.totalPrice.toLocaleString("es-CO")} COP
+           </div>
+           <p>🎉 ¡Tu chiva está confirmada! Estamos listos para hacer de tu evento algo inolvidable.</p>`
         : ""}
       ${booking.status === "cancelled"
         ? "<p>Si crees que esto fue un error, por favor contáctanos respondiendo este correo.</p>"

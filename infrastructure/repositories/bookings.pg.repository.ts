@@ -245,10 +245,17 @@ export class BookingRepository implements IBookingRepository {
     return this.toDomain(row);
   }
 
-  async updateBookingStatus(id: string, status: BookingStatus): Promise<Booking> {
+  async updateBookingStatus(
+    id: string,
+    status: BookingStatus,
+    totalPrice?: number
+  ): Promise<Booking> {
     const row = await prisma.booking.update({
       where: { id },
-      data: { status },
+      data: {
+        status,
+        ...(totalPrice !== undefined && { totalPrice }),
+      },
       include: {
         chiva: { select: { name: true } },
         travel: { select: { name: true } },
