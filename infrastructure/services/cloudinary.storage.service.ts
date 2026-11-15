@@ -10,9 +10,15 @@ const MAX_FILE_SIZE_BYTES = 5 * 1024 * 1024; // 5 MB
  */
 export class CloudinaryImageStorage implements ImageStorage {
   generateUploadSignature(): UploadSignatureDto {
-    const cloudName = process.env.CLOUDINARY_CLOUD_NAME ?? "";
-    const apiKey = process.env.CLOUDINARY_API_KEY ?? "";
-    const apiSecret = process.env.CLOUDINARY_API_SECRET ?? "";
+    const cloudName = (process.env.CLOUDINARY_CLOUD_NAME ?? "")
+      .trim()
+      .replace(/^["']+|["']+$/g, "");
+    const apiKey = (process.env.CLOUDINARY_API_KEY ?? "")
+      .trim()
+      .replace(/^["']+|["']+$/g, "");
+    const apiSecret = (process.env.CLOUDINARY_API_SECRET ?? "")
+      .trim()
+      .replace(/^["']+|["']+$/g, "");
 
     if (!cloudName || !apiKey || !apiSecret) {
       throw new Error(
@@ -25,11 +31,10 @@ export class CloudinaryImageStorage implements ImageStorage {
     const allowedFormats = ALLOWED_FORMATS;
     const maxFileSize = MAX_FILE_SIZE_BYTES;
 
-    // Parámetros firmados ordenados alfabéticamente según especificación de Cloudinary
+    // Cloudinary exige firmar únicamente los parámetros que el frontend envía en el FormData
+    // (folder y timestamp), ordenados alfabéticamente.
     const paramsToSign: Record<string, string | number> = {
-      allowed_formats: allowedFormats.join(","),
       folder,
-      max_file_size: maxFileSize,
       timestamp,
     };
 
