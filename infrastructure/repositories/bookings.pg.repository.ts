@@ -4,7 +4,12 @@ import {
   PaginatedBookingsQuery,
   PaginatedBookingsResult,
 } from "../../domain/repositories/IBookingRepository";
-import { Booking, BookingStatus, CalendarSyncStatus } from "../../domain/models/Booking";
+import {
+  Booking,
+  BookingStatus,
+  CalendarSyncStatus,
+  hasBookingDateTimePassed,
+} from "../../domain/models/Booking";
 import { Prisma } from "@prisma/client";
 import prisma from "../database/prismaClient";
 
@@ -12,7 +17,46 @@ import prisma from "../database/prismaClient";
  * Implementación concreta del repositorio de Bookings usando Prisma + Neon.
  */
 export class BookingRepository implements IBookingRepository {
+  /**
+   * Pasa automáticamente a estado `completed` todas las reservas `confirmed`
+   * cuya fecha y hora en America/Bogota ya se haya cumplido.
+   */
+  private async completeElapsedConfirmedBookings(now: Date = new Date()): Promise<void> {
+    const upperBoundDate = new Date(now.getTime() + 24 * 60 * 60 * 1000);
+
+    const candidates = await prisma.booking.findMany({
+      where: {
+        status: "confirmed",
+        eventDate: { lte: upperBoundDate },
+      },
+      select: {
+        id: true,
+        eventDate: true,
+        startTime: true,
+      },
+    });
+
+    if (candidates.length === 0) return;
+
+    const elapsedIds = candidates
+      .filter((row) => hasBookingDateTimePassed(row.eventDate, row.startTime, now))
+      .map((row) => row.id);
+
+    if (elapsedIds.length > 0) {
+      await prisma.booking.updateMany({
+        where: {
+          id: { in: elapsedIds },
+          status: "confirmed",
+        },
+        data: {
+          status: "completed",
+        },
+      });
+    }
+  }
+
   async findBookingById(id: string): Promise<Booking | null> {
+    await this.completeElapsedConfirmedBookings();
     const row = await prisma.booking.findUnique({
       where: { id },
       include: {
@@ -24,6 +68,7 @@ export class BookingRepository implements IBookingRepository {
   }
 
   async findBookingAll(filters?: BookingFilters): Promise<Booking[]> {
+    await this.completeElapsedConfirmedBookings();
     const rows = await prisma.booking.findMany({
       where: {
         ...(filters?.chivaId && { chivaId: filters.chivaId }),
@@ -45,6 +90,7 @@ export class BookingRepository implements IBookingRepository {
   }
 
   async findBookingPaginated(query: PaginatedBookingsQuery): Promise<PaginatedBookingsResult> {
+    await this.completeElapsedConfirmedBookings();
     const search = query.q?.trim();
     const where: Prisma.BookingWhereInput = {
       ...(query.status && { status: query.status }),
@@ -80,6 +126,7 @@ export class BookingRepository implements IBookingRepository {
   }
 
   async findConfirmedByDateRange(startDate: Date, endDate: Date): Promise<Booking[]> {
+    await this.completeElapsedConfirmedBookings();
     const rows = await prisma.booking.findMany({
       where: {
         status: "confirmed",
@@ -157,6 +204,7 @@ export class BookingRepository implements IBookingRepository {
     chivaId: string,
     fromDate: Date = new Date()
   ): Promise<boolean> {
+    await this.completeElapsedConfirmedBookings(fromDate);
     const todayStr = fromDate.toISOString().split("T")[0];
     const startOfToday = new Date(todayStr + "T00:00:00.000Z");
 
