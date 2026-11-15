@@ -28,16 +28,42 @@ export class EmailResendService implements IEmailService {
 
   /** Envía confirmación de reserva al cliente */
   async sendBookingConfirmation(booking: BookingResponseDto): Promise<void> {
-    try{
+    const subject = `🎉 Reserva recibida #${booking.id.slice(0, 8).toUpperCase()} — Chivas Rumberas`;
+    const html = bookingConfirmationTemplate(booking);
+
+    try {
       const { error } = await this.resend.emails.send({
-      from: this.fromEmail,
-      to: booking.customerEmail,
-      subject: `🎉 Reserva recibida #${booking.id.slice(0, 8).toUpperCase()} — Chivas Rumberas`,
-      html: bookingConfirmationTemplate(booking),
+        from: this.fromEmail,
+        to: booking.customerEmail,
+        subject,
+        html,
       });
+
+      if (error) {
+        console.warn(
+          `[Resend] No se pudo enviar a ${booking.customerEmail} (${error.message}).`
+        );
+        if (
+          this.adminEmail &&
+          this.adminEmail.trim().toLowerCase() !== booking.customerEmail.trim().toLowerCase()
+        ) {
+          await this.resend.emails.send({
+            from: this.fromEmail,
+            to: this.adminEmail,
+            subject,
+            html,
+          });
+          console.log(
+            `[Resend] Confirmación de cliente redirigida a ${this.adminEmail} (modo sandbox Resend)`
+          );
+          return;
+        }
+      }
     } catch (error) {
       console.error("[Resend] Error de red o inesperado enviando confirmación:", error);
-      throw new Error(`Error enviando email de confirmación: ${error instanceof Error ? error.message : String(error)}`);
+      throw new Error(
+        `Error enviando email de confirmación: ${error instanceof Error ? error.message : String(error)}`
+      );
     }
     console.log(`[Resend] Confirmación de reserva enviada a ${booking.customerEmail}`);
   }
@@ -46,6 +72,16 @@ export class EmailResendService implements IEmailService {
   async sendNewBookingAlert(booking: BookingResponseDto): Promise<void> {
     if (!this.adminEmail) {
       console.warn("[Resend] ADMIN_EMAIL no configurado, omitiendo alerta al admin.");
+      return;
+    }
+
+    // Si estamos usando el remitente de prueba de Resend (onboarding@resend.dev) o si el correo
+    // del cliente es el mismo que ADMIN_EMAIL, omitimos la alerta interna del admin para no
+    // sobreescribir ni bloquear por rate-limit el correo que debe recibir el cliente.
+    if (
+      this.fromEmail.includes("onboarding@resend.dev") ||
+      this.adminEmail.trim().toLowerCase() === booking.customerEmail.trim().toLowerCase()
+    ) {
       return;
     }
 
@@ -68,9 +104,14 @@ export class EmailResendService implements IEmailService {
           </ul>
         `,
       });
+      if (error) {
+        console.warn("[Resend] Error enviando alerta al admin:", error.message);
+      }
     } catch (error) {
       console.error("[Resend] Error de red o inesperado enviando alerta al admin:", error);
-      throw new Error(`Error enviando email de alerta: ${error instanceof Error ? error.message : String(error)}`);
+      throw new Error(
+        `Error enviando email de alerta: ${error instanceof Error ? error.message : String(error)}`
+      );
     }
     console.log(`[Resend] Alerta de nueva reserva enviada a ${this.adminEmail}`);
   }
@@ -80,16 +121,42 @@ export class EmailResendService implements IEmailService {
     booking: BookingResponseDto,
     previousStatus: string
   ): Promise<void> {
-    try{
+    const subject = `Actualización de tu reserva #${booking.id.slice(0, 8).toUpperCase()}`;
+    const html = bookingStatusUpdateTemplate(booking, previousStatus);
+
+    try {
       const { error } = await this.resend.emails.send({
-      from: this.fromEmail,
-      to: booking.customerEmail,
-      subject: `Actualización de tu reserva #${booking.id.slice(0, 8).toUpperCase()}`,
-      html: bookingStatusUpdateTemplate(booking, previousStatus),
+        from: this.fromEmail,
+        to: booking.customerEmail,
+        subject,
+        html,
       });
-    }catch (error) {
+
+      if (error) {
+        console.warn(
+          `[Resend] No se pudo enviar actualización a ${booking.customerEmail} (${error.message}).`
+        );
+        if (
+          this.adminEmail &&
+          this.adminEmail.trim().toLowerCase() !== booking.customerEmail.trim().toLowerCase()
+        ) {
+          await this.resend.emails.send({
+            from: this.fromEmail,
+            to: this.adminEmail,
+            subject,
+            html,
+          });
+          console.log(
+            `[Resend] Actualización de estado del cliente redirigida a ${this.adminEmail} (modo sandbox Resend)`
+          );
+          return;
+        }
+      }
+    } catch (error) {
       console.error("[Resend] Error de red o inesperado enviando actualización de estado:", error);
-      throw new Error(`Error enviando email de actualización: ${error instanceof Error ? error.message : String(error)}`);
+      throw new Error(
+        `Error enviando email de actualización: ${error instanceof Error ? error.message : String(error)}`
+      );
     }
 
     console.log(`[Resend] Actualización de estado enviada a ${booking.customerEmail}`);
