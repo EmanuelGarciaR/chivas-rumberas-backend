@@ -20,7 +20,12 @@ import { UpdateChivaUseCase } from "../application/use-cases/chiva/UpdateChiva";
 import { DeleteChivaUseCase } from "../application/use-cases/chiva/DeleteChiva";
 import type { IJwtService } from "../application/ports/IJwtService";
 import type { JwtPayload } from "../domain/models/JwtPayload";
-import type { Booking, BookingStatus, CalendarSyncStatus } from "../domain/models/Booking";
+import {
+  hasBookingDateTimePassed,
+  type Booking,
+  type BookingStatus,
+  type CalendarSyncStatus,
+} from "../domain/models/Booking";
 import type { Customer } from "../domain/models/Customer";
 import type { IBookingRepository, PaginatedBookingsQuery } from "../domain/repositories/IBookingRepository";
 import type { IChivaRepository } from "../domain/repositories/IChivaRepository";
@@ -831,5 +836,21 @@ describe("DELETE /chivas/:id — Borrado lógico y conflicto 409 con reservas ac
 
     assert.equal(res.status, 409);
     assert.equal(res.body.error.type, "ChivaHasActiveBookingsError");
+  });
+});
+
+// ── 8. Autocompletado de reservas al cumplirse día y hora ─────────────────
+describe("hasBookingDateTimePassed — Transición automática a completed por fecha y hora", () => {
+  it("retorna true cuando ya se cumplió el día y hora en America/Bogota y false si aún es futuro", () => {
+    const eventDate = new Date("2026-11-15T00:00:00.000Z");
+    const startTime = "18:00"; // 18:00 en Colombia = 23:00 UTC
+
+    const beforeEvent = new Date("2026-11-15T17:59:00-05:00");
+    const exactEvent = new Date("2026-11-15T18:00:00-05:00");
+    const afterEvent = new Date("2026-11-15T19:30:00-05:00");
+
+    assert.equal(hasBookingDateTimePassed(eventDate, startTime, beforeEvent), false);
+    assert.equal(hasBookingDateTimePassed(eventDate, startTime, exactEvent), true);
+    assert.equal(hasBookingDateTimePassed(eventDate, startTime, afterEvent), true);
   });
 });
