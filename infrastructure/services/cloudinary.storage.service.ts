@@ -31,9 +31,9 @@ export class CloudinaryImageStorage implements ImageStorage {
     const allowedFormats = ALLOWED_FORMATS;
     const maxFileSize = MAX_FILE_SIZE_BYTES;
 
-    // Cloudinary exige firmar únicamente los parámetros que el frontend envía en el FormData
-    // (folder y timestamp), ordenados alfabéticamente.
+    // Cloudinary firma allowed_formats, folder y timestamp (max_file_size no forma parte del String to sign de Cloudinary)
     const paramsToSign: Record<string, string | number> = {
+      allowed_formats: allowedFormats.join(","),
       folder,
       timestamp,
     };
